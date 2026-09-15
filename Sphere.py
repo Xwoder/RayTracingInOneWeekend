@@ -1,4 +1,5 @@
 import math
+from typing import override
 
 from HitRecord import HitRecord
 from Hitable import Hitable
@@ -65,6 +66,7 @@ class Sphere(Hitable):
             return NotImplemented
         return self._center == other.center and self._radius == other.radius
 
+    @override
     def hit(
         self,
         ray: Ray,
@@ -95,10 +97,10 @@ class Sphere(Hitable):
         """
         oc: Vec3 = self._center - ray.origin
 
-        a: Number = ray.direction.dot(ray.direction)
+        a: Number = ray.direction.length_squared()
         h: Number = ray.direction.dot(oc)
-        c: Number = oc.dot(oc) - self._radius * self._radius
-        discriminant: Number = h * h - a * c
+        c: Number = oc.length_squared() - self._radius ** 2
+        discriminant: Number = h ** 2 - a * c
         if discriminant < 0:
             return None
 
