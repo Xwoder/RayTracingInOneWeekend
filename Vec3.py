@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 from typing import Sequence
 
@@ -112,7 +114,7 @@ class Vec3:
             return self._z
         raise IndexError("Vec3 index out of range")
 
-    def __add__(self, other: "Vec3") -> "Vec3":
+    def __add__(self, other: "Vec3") -> Vec3:
         """
         向量加法（v + u），返回新向量（对应 C++ 的 operator+）。
         不修改原向量。
@@ -125,7 +127,7 @@ class Vec3:
         """
         return Vec3(self._x + other.x, self._y + other.y, self._z + other.z)
 
-    def __sub__(self, other: "Vec3") -> "Vec3":
+    def __sub__(self, other: Vec3) -> Vec3:
         """
         向量减法（v - u），返回新向量（对应 C++ 的 operator-）。
         不修改原向量。
@@ -138,7 +140,7 @@ class Vec3:
         """
         return Vec3(self._x - other.x, self._y - other.y, self._z - other.z)
 
-    def __mul__(self, other: "Vec3 | Number") -> "Vec3":
+    def __mul__(self, other: "Vec3 | Number") -> Vec3:
         """
         乘法（v * t 或 v * u），返回新向量，不修改原向量。
         - 标量 t：各分量乘以 t（对应 C++ 的 operator*(double)）。
@@ -154,7 +156,7 @@ class Vec3:
             return Vec3(self._x * other.x, self._y * other.y, self._z * other.z)
         return Vec3(self._x * other, self._y * other, self._z * other)
 
-    def __rmul__(self, other: "Number") -> "Vec3":
+    def __rmul__(self, other: "Number") -> Vec3:
         """
         右乘（t * v），使标量可写在左侧。直接复用 __mul__。
 
@@ -166,7 +168,7 @@ class Vec3:
         """
         return self.__mul__(other)
 
-    def __truediv__(self, other: "Vec3 | Number") -> "Vec3":
+    def __truediv__(self, other: "Vec3 | Number") -> Vec3:
         """
         除法（v / t 或 v / u），返回新向量，不修改原向量。
         - 标量 t：各分量除以 t（对应 C++ 的 operator/(double)）。
@@ -218,7 +220,7 @@ class Vec3:
         """
         return math.sqrt(self.length_squared())
 
-    def dot(self, other: "Vec3") -> Number:
+    def dot(self, other: Vec3) -> Number:
         """
         向量内积（点积），返回标量。
         对应 C++ 的 dot(const vec3&, const vec3&)。
@@ -231,7 +233,7 @@ class Vec3:
         """
         return self._x * other.x + self._y * other.y + self._z * other.z
 
-    def normalized(self) -> "Vec3":
+    def normalized(self) -> Vec3:
         """
         返回当前向量的单位向量（方向相同、长度为 1）。
         实现为 self / self.length()，不修改原向量（对应 C++ 的 unit_vector）。
@@ -253,7 +255,7 @@ class Vec3:
         """
         return f"Vec3({self._x}, {self._y}, {self._z})"
 
-    def cross(self, other: "Vec3") -> "Vec3":
+    def cross(self, other: Vec3) -> Vec3:
         """
         向量叉积（外积），返回一个与 self 和 other 都垂直的新向量。
         对应 C++ 的 cross(const vec3&, const vec3&)。
