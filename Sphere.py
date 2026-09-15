@@ -70,11 +70,11 @@ class Sphere:
         |P(t) - center|² = radius² 的展开式 a·t² + b·t + c = 0，其中：
             oc      = center - origin
             a       = dot(dir, dir)
-            half_b  = dot(dir, oc)      # 注意 b = -2·half_b
+            b       = -2·dot(dir, oc)
             c       = dot(oc, oc) - radius²
-            discriminant = half_b² - a·c
+            discriminant = b² - 4·a·c
         若判别式 < 0 则无实交点，返回 None；否则返回较小的正根
-        (-half_b - sqrt(discriminant)) / a（取离光线原点更近的交点）。
+        (-b - sqrt(discriminant)) / (2·a)（取离光线原点更近的交点）。
 
         Args:
             r (Ray): 待检测的光线。
@@ -84,13 +84,13 @@ class Sphere:
         """
         oc: Vec3 = self._center - r.origin
         a: Number = r.direction.dot(r.direction)
-        half_b: Number = r.direction.dot(oc)
+        b: Number = -2.0 * r.direction.dot(oc)
         c: Number = oc.dot(oc) - self._radius * self._radius
-        discriminant: Number = half_b * half_b - a * c
+        discriminant: Number = b * b - 4.0 * a * c
         if discriminant < 0:
             return None
 
-        return (half_b - math.sqrt(discriminant)) / a
+        return (-b - math.sqrt(discriminant)) / (2.0 * a)
 
 
 if __name__ == "__main__":
