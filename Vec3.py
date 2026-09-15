@@ -234,6 +234,22 @@ class Vec3:
             return Vec3(self._x / other.x(), self._y / other.y(), self._z / other.z())
         return Vec3(self._x / other, self._y / other, self._z / other)
 
+    def __eq__(self, other: object) -> bool:
+        """
+        相等判断（v == u），当三个分量都相等时返回 True。
+        对应 C++ 的 operator==。若 other 不是 Vec3，则返回 NotImplemented
+        交由 Python 处理（通常得到 False）。
+
+        Args:
+            other (object): 比较对象。
+
+        Returns:
+            bool: 分量是否全部相等
+        """
+        if not isinstance(other, Vec3):
+            return NotImplemented
+        return self._x == other.x() and self._y == other.y() and self._z == other.z()
+
     def length(self):
         """
         计算向量的欧几里得长度（模）
