@@ -51,20 +51,26 @@ class Vec3:
         return cls(x, y, z)
 
     def length(self):
+        """
+        计算向量的欧几里得长度（模）
+
+        Returns:
+            float: 向量各分量平方和的算术平方根，即 sqrt(x² + y² + z²)
+        """
         return math.sqrt(
             self.x ** 2 +
-            self.y ** 2 +
-            self.z ** 2
-        )
+                self.y ** 2 +
+                self.z ** 2
+            )
 
 
 if __name__ == '__main__':
-    v = Vec3(1, 2, 3)
+    v = Vec3(3, 4, 5)
     s1 = Vec3.from_sequence([1,2,3])
     s2 = Vec3.from_sequence((1,2,3))
 
     print(v.x, v.y, v.z)
-    print(v.length())
+    print(f"{v.length() = }")
 
     print(s1.x, s1.y, s1.z)
     print(s2.x, s2.y, s2.z)
