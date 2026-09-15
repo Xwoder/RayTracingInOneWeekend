@@ -17,7 +17,7 @@ from __future__ import annotations
 try:
     import matplotlib
 
-    matplotlib.use("TkAgg")  # 弹出独立窗口；macOS/Linux/Windows 通用
+    matplotlib.use("MacOSX")  # 弹出独立窗口；macOS/Linux/Windows 通用
     import matplotlib.pyplot as plt
     from matplotlib.patches import FancyArrowPatch
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (确保 3D 支持)
