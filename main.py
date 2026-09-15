@@ -30,7 +30,7 @@ def ray_color(ray: Ray) -> Color:
     if t > 0:
         # 命中：以交点处单位法线映射到 RGB 着色
         N = (ray.at(t) - sphere.center).unit_vector()
-        return 0.5 * Color(N.x + 1, N.y + 1, N.z + 1)
+        return (Color(N.x, N.y, N.z) + Vec3(1, 1, 1)) / 2
     else:
         # 未命中：返回天空渐变背景
         unit_direction = ray.direction.unit_vector()
