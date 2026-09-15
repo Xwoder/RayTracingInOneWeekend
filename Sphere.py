@@ -65,7 +65,12 @@ class Sphere(Hitable):
             return NotImplemented
         return self._center == other.center and self._radius == other.radius
 
-    def hit(self, r: Ray) -> HitRecord | None:
+    def hit(
+        self,
+        ray: Ray,
+        ray_t_min: Number = 0.0,
+        ray_t_max: Number = math.inf,
+    ) -> HitRecord | None:
         """
         判断光线是否击中本球体，命中时返回记录交点信息的 HitRecord。
 
@@ -76,34 +81,38 @@ class Sphere(Hitable):
             h           = dot(dir, oc)
             c           = dot(oc, oc) - radius²
             discriminant = h² - a·c
-        若判别式 < 0 则无实交点，返回 None；否则取较小的正根
-        (h - sqrt(discriminant)) / a 作为最近正向交点，并构造包含交点坐标 p、
+        若判别式 < 0 则无实交点，返回 None；否则依次检验两根是否在 [t_min, t_max]
+        区间内，取落在区间内的最近交点 t，并构造包含交点坐标 p、
         单位外法向量 normal = (p - center).unit_vector()、参数 t 的 HitRecord 返回。
 
         Args:
-            r (Ray): 待检测的光线。
+            ray (Ray): 待检测的光线。
+            ray_t_min (Number): 光线参数 t 的下界（不含），默认 0.0。
+            ray_t_max (Number): 光线参数 t 的上界（不含），默认为正无穷。
 
         Returns:
             HitRecord | None: 命中时返回填充好的 HitRecord，未命中返回 None。
         """
-        oc: Vec3 = self._center - r.origin
+        oc: Vec3 = self._center - ray.origin
 
-        a: Number = r.direction.dot(r.direction)
-        h: Number = r.direction.dot(oc)
+        a: Number = ray.direction.dot(ray.direction)
+        h: Number = ray.direction.dot(oc)
         c: Number = oc.dot(oc) - self._radius * self._radius
         discriminant: Number = h * h - a * c
         if discriminant < 0:
             return None
 
         sqrt_d: Number = math.sqrt(discriminant)
-        t: Number = (h - sqrt_d) / a
-        if t <= 0:
-            # 取离光线原点更近的正向交点；若较小根非正，尝试较大根
-            t = (h + sqrt_d) / a
-            if t <= 0:
+        root: Number = (h - sqrt_d) / a
+
+        if not (ray_t_min < root < ray_t_max):
+            root = (h + sqrt_d) / a
+
+            if not (ray_t_min < root < ray_t_max):
                 return None
 
-        p: Point3 = r.at(t)
+        t: Number = root
+        p: Point3 = ray.at(t)
         normal: Vec3 = (p - self._center).unit_vector()
         return HitRecord(p, normal, t)
 
@@ -130,5 +139,16 @@ if __name__ == "__main__":
     r_miss = Ray(Point3(5, 0, -5), Vec3(0, 0, 1))
     print(f"hit (未命中): {s.hit(r_miss)}")
     assert s.hit(r_miss) is None
+
+    # t 区间限制：交点 t=3.5 落在 [0, 100) 内应命中
+    assert s.hit(r_hit, 0.0, 100.0) is not None
+    # 上界过小，两个根（3.5, 6.5）都被排除
+    assert s.hit(r_hit, 0.0, 3.0) is None
+    # 下界过大：近根 3.5 被排除，远根 6.5 仍落在区间内，应命中
+    rec_far = s.hit(r_hit, 4.0, 100.0)
+    assert rec_far is not None
+    assert abs(rec_far.t - 6.5) < 1e-9
+    # 下界更大：两个根都被排除
+    assert s.hit(r_hit, 7.0, 100.0) is None
 
     print("\n所有测试通过！")
