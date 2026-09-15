@@ -2,7 +2,7 @@
 
 import sys
 
-from Vec3 import Color, write_color
+from Color import Color, write_color
 
 
 def main() -> None:
@@ -23,7 +23,7 @@ def main() -> None:
             g = row / (image_height - 1)
             b = 0.0
             pixel_color = Color(r, g, b, )
-            out_std.write(write_color(pixel_color))
+            write_color(out_std, pixel_color)
     out_std.write("Done")
 
 
