@@ -62,10 +62,10 @@ class Sphere:
 
 if __name__ == "__main__":
     s = Sphere(Point3(0, 0, 0), 1.5)
-    print("center:", s.center)
-    print("radius:", s.radius)
+    print(f"center: {s.center}")
+    print(f"radius: {s.radius}")
     assert s.center == Point3(0, 0, 0)
     assert s.radius == 1.5
-    print("__repr__:", repr(s))
+    print(f"__repr__: {s!r}")
     assert eval(repr(s)) == s
     print("\n所有测试通过！")

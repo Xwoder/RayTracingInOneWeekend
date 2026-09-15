@@ -38,15 +38,15 @@ class Camera:
 if __name__ == "__main__":
     # 默认构造：位于原点，朝向 +Z
     c = Camera()
-    print("default position:", c.position)
-    print("default direction:", c.direction)
+    print(f"default position: {c.position}")
+    print(f"default direction: {c.direction}")
     assert c.position == Point3(0, 0, 0)
     assert c.direction == Vec3(0, 0, 1)
 
     # 自定义构造
     c2 = Camera(Point3(1, 2, 3), Vec3(0, 1, 0))
-    print("custom position:", c2.position)
-    print("custom direction:", c2.direction)
+    print(f"custom position: {c2.position}")
+    print(f"custom direction: {c2.direction}")
     assert c2.position == Point3(1, 2, 3)
     assert c2.direction == Vec3(0, 1, 0)
 
