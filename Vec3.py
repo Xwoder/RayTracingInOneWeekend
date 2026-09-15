@@ -1,7 +1,7 @@
 import math
 from typing import Sequence
 
-type Number = float | int
+from Number import Number
 
 
 class Vec3:
