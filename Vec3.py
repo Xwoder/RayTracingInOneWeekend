@@ -272,6 +272,14 @@ class Vec3:
             self._x * other.y - self._y * other.x,
         )
 
+    @classmethod
+    def zero(cls) -> Vec3:
+        return cls(0, 0, 0)
+
+    @classmethod
+    def one(cls) -> Vec3:
+        return cls(1, 1, 1)
+
 
 Point3 = Vec3
 
