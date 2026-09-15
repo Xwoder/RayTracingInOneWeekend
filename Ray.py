@@ -7,6 +7,8 @@ class Ray:
 
     一条光线由原点 orig 与方向 dir 定义，参数方程 P(t) = orig + t * dir。
     """
+    _orig: Point3
+    _dir: Vec3
 
     def __init__(self, origin: Point3, direction: Vec3):
         """
@@ -19,12 +21,14 @@ class Ray:
         self._orig = origin
         self._dir = direction
 
+    @property
     def origin(self) -> Point3:
-        """返回光线原点的只读引用（对应 C++ const point3& origin()）。"""
+        """返回光线原点（对应 C++ const point3& origin()）。"""
         return self._orig
 
+    @property
     def direction(self) -> Vec3:
-        """返回光线方向的只读引用（对应 C++ const vec3& direction()）。"""
+        """返回光线方向（对应 C++ const vec3& direction()）。"""
         return self._dir
 
     def at(self, t: float) -> Point3:
@@ -42,8 +46,8 @@ class Ray:
 
 if __name__ == "__main__":
     r = Ray(Point3(0, 0, 0), Vec3(1, 2, 3))
-    print("origin:", r.origin())
-    print("direction:", r.direction())
+    print("origin:", r.origin)
+    print("direction:", r.direction)
     print("at(0):", r.at(0))
     print("at(1):", r.at(1))
     print("at(2.5):", r.at(2.5))
