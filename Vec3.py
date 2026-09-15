@@ -231,7 +231,7 @@ class Vec3:
         """
         return self._x * other.x + self._y * other.y + self._z * other.z
 
-    def normalized(self) -> Vec3:
+    def unit_vector(self) -> Vec3:
         """
         返回当前向量的单位向量（方向相同、长度为 1）。
         实现为 self / self.length()，不修改原向量（对应 C++ 的 unit_vector）。
