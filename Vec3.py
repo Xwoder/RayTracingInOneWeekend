@@ -218,6 +218,22 @@ class Vec3:
         """
         return self.__mul__(other)
 
+    def __truediv__(self, other: "Vec3 | Number") -> "Vec3":
+        """
+        除法（v / t 或 v / u），返回新向量，不修改原向量。
+        - 标量 t：各分量除以 t（对应 C++ 的 operator/(double)）。
+        - 向量 u：逐分量相除。
+
+        Args:
+            other (Vec3 | Number): 右侧操作数，可为标量或向量。
+
+        Returns:
+            Vec3: 相除后的新向量
+        """
+        if isinstance(other, Vec3):
+            return Vec3(self._x / other.x(), self._y / other.y(), self._z / other.z())
+        return Vec3(self._x / other, self._y / other, self._z / other)
+
     def length(self):
         """
         计算向量的欧几里得长度（模）
