@@ -15,7 +15,7 @@ sphere: Sphere = Sphere(Point3(0, 0, -1), 0.5)
 def ray_color(r: Ray) -> Color:
     # 若光线击中位于 (0,0,-1)、半径为 0.5 的球，返回红色
     t = sphere.hit(r)
-    if t is not None and t > 0:
+    if t > 0:
         return Color(1, 0, 0)
 
     # 否则返回天空渐变背景
