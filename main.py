@@ -2,6 +2,8 @@
 
 import sys
 
+from Vec3 import Color, write_color
+
 
 def main() -> None:
     # Image
@@ -20,12 +22,8 @@ def main() -> None:
             r = col / (image_width - 1)
             g = row / (image_height - 1)
             b = 0.0
-
-            ir = int(255 * r)
-            ig = int(255 * g)
-            ib = int(255 * b)
-
-            out_std.write(f"{ir} {ig} {ib}\n")
+            pixel_color = Color(r, g, b, )
+            out_std.write(write_color(pixel_color))
     out_std.write("Done")
 
 
