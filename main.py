@@ -16,10 +16,8 @@ def ray_color(r: Ray):
 
 def main() -> None:
     # Image
-    aspect_ratio = 16.0 / 9.0
-    image_width = 400
-
-    # Calculate the image height, and ensure that it's at least 1.
+    aspect_ratio = 16 / 9
+    image_width = 800
     image_height = int(image_width / aspect_ratio)
     image_height = 1 if image_height < 1 else image_height
 
@@ -41,26 +39,24 @@ def main() -> None:
     pixel_delta_v: Vec3 = viewport_v / image_height
 
     # Calculate the location of the upper left pixel.
-    viewport_upper_left = camera.position - focal_direction - viewport_u / 2 - viewport_v / 2
+    viewport_center = camera.position - focal_direction
+    viewport_upper_left = viewport_center - viewport_u / 2 - viewport_v / 2
     pixel00_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) / 2
 
-    # Render
     out_std = sys.stdout
+    out_err = sys.stderr
+
+    # Render
     out_std.write(f"P3\n{image_width} {image_height}\n255\n")
 
-    out_err = sys.stderr
 
     for row in range(image_height):
         out_err.write(f"Rendering row {row}\n")
         for col in range(image_width):
-            # r = col / (image_width - 1)
-            # g = row / (image_height - 1)
-            # b = 0.0
-            # pixel_color = Color(r, g, b)
             pixel_center = pixel00_loc + (col * pixel_delta_u) + (row * pixel_delta_v)
             ray_direction = pixel_center - camera.position
-            r = Ray(camera.position, ray_direction)
-            pixel_color = ray_color(r)
+            ray: Ray = Ray(camera.position, ray_direction)
+            pixel_color = ray_color(ray)
             write_color(out_std, pixel_color)
     out_std.write("Done")
 
