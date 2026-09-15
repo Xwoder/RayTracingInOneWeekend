@@ -16,8 +16,8 @@ def ray_color(ray: Ray) -> Color:
     """
     计算光线在场景中的着色颜色（对应《Ray Tracing in One Weekend》的 ray_color）。
 
-    若光线与场景中的球体相交（交点参数 t > 0），则以交点处的单位法线
-    映射为 RGB 颜色返回；否则返回按光线方向 y 分量插值出的天空渐变背景色。
+    若光线与场景中的球体相交，则以交点处的单位法线映射为 RGB 颜色返回；
+    否则返回按光线方向 y 分量插值出的天空渐变背景色。
 
     Args:
         ray (Ray): 待着色的光线，其原点为相机位置，方向指向当前像素。
@@ -26,11 +26,11 @@ def ray_color(ray: Ray) -> Color:
         Color: 该光线对应的颜色。命中球体时为法线映射色
             0.5 * (N + 1)；未命中时为天空渐变背景色。
     """
-    t = sphere.hit(ray)
+    rec = sphere.hit(ray)
     color: Color
-    if t > 0:
+    if rec is not None:
         # 命中：以交点处单位法线映射到 RGB 着色
-        N = (ray.at(t) - sphere.center).unit_vector()
+        N = rec.normal
         color = (Color(N.x, N.y, N.z) + Vec3.one()) / 2
         return color
     else:

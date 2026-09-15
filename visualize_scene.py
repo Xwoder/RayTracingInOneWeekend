@@ -112,9 +112,9 @@ for r in sample_rows:
     for c in sample_cols:
         pc = pixel_center(c, r)
         ray = Ray(camera.position, pc - camera.position)
-        t = sphere.hit(ray)
-        if t is not None and t > 0:
-            end = ray.at(t)            # 命中：停在球面
+        rec = sphere.hit(ray)
+        if rec is not None:
+            end = ray.at(rec.t)        # 命中：停在球面
             is_hit = True
         else:
             # 未命中：沿原方向延长到 z = -3 处

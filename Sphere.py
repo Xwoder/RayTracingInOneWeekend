@@ -3,13 +3,16 @@ import math
 from Number import Number
 from Ray import Ray
 from Vec3 import Point3, Vec3
+from HitRecord import HitRecord
+from Hitable import Hitable
 
 
-class Sphere:
+class Sphere(Hitable):
     """
     球体类
 
     一个球体由球心 center 与半径 radius 定义。
+    实现 Hitable 接口，提供光线-球体相交检测 hit()。
     """
 
     _center: Point3
@@ -62,25 +65,27 @@ class Sphere:
             return NotImplemented
         return self._center == other.center and self._radius == other.radius
 
-    def hit(self, r: Ray) -> float:
+    def hit(self, r: Ray) -> "HitRecord | None":
         """
-        判断光线是否击中本球体，并返回最近的正向交点参数 t。
+        判断光线是否击中本球体，命中时返回记录交点信息的 HitRecord。
 
-        对应 C++ 的 hit_sphere（升级版）。求解球面方程
-        |P(t) - center|² = radius² 的展开式 a·t² + b·t + c = 0，其中：
+        对应《Ray Tracing in One Weekend》中 hittable::hit 的球体实现。
+        求解球面方程 |P(t) - center|² = radius² 的展开式
+        a·t² + b·t + c = 0，其中：
             oc      = center - origin
             a       = dot(dir, dir)
             b       = -2·dot(dir, oc)
             c       = dot(oc, oc) - radius²
             discriminant = b² - 4·a·c
-        若判别式 < 0 则无实交点，返回哨兵值 -1.0；否则返回较小的正根
-        (-b - sqrt(discriminant)) / (2·a)（取离光线原点更近的交点）。
+        若判别式 < 0 则无实交点，返回 None；否则取较小的正根
+        (-b - sqrt(discriminant)) / (2·a) 作为最近正向交点，并构造包含交点坐标 p、
+        单位外法向量 normal = (p - center).unit_vector()、参数 t 的 HitRecord 返回。
 
         Args:
             r (Ray): 待检测的光线。
 
         Returns:
-            float: 最近正向交点的参数 t；光线未击中球体时返回 -1.0。
+            HitRecord | None: 命中时返回填充好的 HitRecord，未命中返回 None。
         """
         oc: Vec3 = self._center - r.origin
         a: Number = r.direction.dot(r.direction)
@@ -88,9 +93,19 @@ class Sphere:
         c: Number = oc.dot(oc) - self._radius * self._radius
         discriminant: Number = b * b - 4.0 * a * c
         if discriminant < 0:
-            return -1.0
-        else:
-            return (-b - math.sqrt(discriminant)) / (2.0 * a)
+            return None
+
+        sqrt_d: Number = math.sqrt(discriminant)
+        t: Number = (-b - sqrt_d) / (2.0 * a)
+        if t <= 0:
+            # 取离光线原点更近的正向交点；若较小根非正，尝试较大根
+            t = (-b + sqrt_d) / (2.0 * a)
+            if t <= 0:
+                return None
+
+        p: Point3 = r.at(t)
+        normal: Vec3 = (p - self._center).unit_vector()
+        return HitRecord(p, normal, t)
 
 
 if __name__ == "__main__":
@@ -105,14 +120,15 @@ if __name__ == "__main__":
     # hit 光线-球体相交检测
     # 沿 +z 方向、从原点射向球心在 (0,0,0)、半径 1 的球
     r_hit = Ray(Point3(0, 0, -5), Vec3(0, 0, 1))
-    t = s.hit(r_hit)
-    print(f"hit (命中): t = {t}")
-    assert t > 0
-    assert abs(t - 3.5) < 1e-9  # 交点在 z = -5 + 3.5 = -1.5，距球心 1.5
+    rec_hit = s.hit(r_hit)
+    print(f"hit (命中): rec = {rec_hit}")
+    assert rec_hit is not None
+    assert abs(rec_hit.t - 3.5) < 1e-9  # 交点在 z = -5 + 3.5 = -1.5，距球心 1.5
+    assert rec_hit.p == Point3(0, 0, -1.5)
 
     # 完全错过球体（沿 +x 偏离）
     r_miss = Ray(Point3(5, 0, -5), Vec3(0, 0, 1))
     print(f"hit (未命中): {s.hit(r_miss)}")
-    assert s.hit(r_miss) == -1.0
+    assert s.hit(r_miss) is None
 
     print("\n所有测试通过！")
