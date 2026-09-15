@@ -304,6 +304,47 @@ class Vec3:
         """
         return self._x * other.x() + self._y * other.y() + self._z * other.z()
 
+    def normalized(self) -> "Vec3":
+        """
+        返回当前向量的单位向量（方向相同、长度为 1）。
+        实现为 self / self.length()，不修改原向量（对应 C++ 的 unit_vector）。
+        注意：若向量长度为零，将触发除零错误（ZeroDivisionError）。
+
+        Returns:
+            Vec3: 归一化后的新向量
+        """
+        return self / self.length()
+
+    def __repr__(self) -> str:
+        """
+        返回向量的官方字符串表示，形如 Vec3(x, y, z)。
+        供 repr()、交互式解释器及调试使用；其输出应满足 eval(repr(v))
+        可还原出等价对象。
+
+        Returns:
+            str: 包含三个分量的字符串表示
+        """
+        return f"Vec3({self._x}, {self._y}, {self._z})"
+
+    def cross(self, other: "Vec3") -> "Vec3":
+        """
+        向量叉积（外积），返回一个与 self 和 other 都垂直的新向量。
+        对应 C++ 的 cross(const vec3&, const vec3&)。
+        结果方向由右手定则确定，长度等于 |self| * |other| * sin(theta)
+        （即两向量张成平行四边形的面积）。
+
+        Args:
+            other (Vec3): 另一个向量。
+
+        Returns:
+            Vec3: 叉积得到的新向量
+        """
+        return Vec3(
+            self._y * other.z() - self._z * other.y(),
+            self._z * other.x() - self._x * other.z(),
+            self._x * other.y() - self._y * other.x(),
+        )
+
 
 Point3 = Vec3
 Color = Vec3
