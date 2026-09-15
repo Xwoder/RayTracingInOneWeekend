@@ -277,14 +277,97 @@ Point3 = Vec3
 Color = Vec3
 
 if __name__ == '__main__':
-    v = Vec3(3, 4, 5)
-    s1 = Vec3.from_sequence([1, 2, 3])
-    s2 = Vec3.from_sequence((1, 2, 3))
+    # __init__ 构造函数
+    v = Vec3(1, 2, 3)
+    print("__init__:", v)
+    assert repr(v) == "Vec3(1, 2, 3)"
 
-    print(v.x, v.y, v.z)
-    print(f"{v.length() = }")
+    # from_sequence 类方法
+    w = Vec3.from_sequence([4, 5, 6])
+    print("from_sequence:", w)
+    assert w == Vec3(4, 5, 6)
+    try:
+        Vec3.from_sequence([1, 2])
+    except ValueError as e:
+        print("from_sequence ValueError:", e)
 
-    print(s1.x, s1.y, s1.z)
-    print(s2.x, s2.y, s2.z)
+    # x / y / z 只读属性
+    print("x, y, z:", v.x, v.y, v.z)
+    assert (v.x, v.y, v.z) == (1, 2, 3)
 
-    print(s1 - s2)
+    # __neg__ 一元负号
+    neg_v = -v
+    print("__neg__:", neg_v)
+    assert neg_v == Vec3(-1, -2, -3)
+
+    # __getitem__ 下标访问
+    print("__getitem__:", v[0], v[1], v[2])
+    assert (v[0], v[1], v[2]) == (1, 2, 3)
+    try:
+        v[3]
+    except IndexError as e:
+        print("__getitem__ IndexError:", e)
+
+    # __add__ 向量加法
+    add_v = v + w
+    print("__add__:", add_v)
+    assert add_v == Vec3(5, 7, 9)
+
+    # __sub__ 向量减法
+    sub_v = w - v
+    print("__sub__:", sub_v)
+    assert sub_v == Vec3(3, 3, 3)
+
+    # __mul__ 标量乘法与逐分量乘法（Hadamard 积）
+    mul_s = v * 2
+    mul_v = v * w
+    print("__mul__ scalar:", mul_s, " vector:", mul_v)
+    assert mul_s == Vec3(2, 4, 6)
+    assert mul_v == Vec3(4, 10, 18)
+
+    # __rmul__ 标量左乘
+    rmul_s = 3 * v
+    print("__rmul__:", rmul_s)
+    assert rmul_s == Vec3(3, 6, 9)
+
+    # __truediv__ 标量除法与逐分量除法
+    div_s = v / 2
+    div_v = Vec3(2, 4, 6) / w
+    print("__truediv__ scalar:", div_s, " vector:", div_v)
+    assert div_s == Vec3(0.5, 1.0, 1.5)
+    assert div_v == Vec3(0.5, 0.8, 1.0)
+
+    # __eq__ 相等判断
+    print("__eq__:", v == Vec3(1, 2, 3), v == Vec3(0, 0, 0))
+    assert v == Vec3(1, 2, 3)
+    assert v != Vec3(0, 0, 0)
+    assert v != "not a vec"
+
+    # length_squared 长度平方
+    print("length_squared:", v.length_squared())
+    assert v.length_squared() == 14
+
+    # length 欧几里得长度
+    print("length:", v.length())
+    assert v.length() == math.sqrt(14)
+
+    # dot 点积
+    print("dot:", v.dot(w))
+    assert v.dot(w) == 1 * 4 + 2 * 5 + 3 * 6
+
+    # cross 叉积
+    cross_v = v.cross(w)
+    print("cross:", cross_v)
+    assert cross_v == Vec3(2 * 6 - 3 * 5, 3 * 4 - 1 * 6, 1 * 5 - 2 * 4)
+
+    # unit_vector 单位向量
+    u = Vec3(3, 0, 0).unit_vector()
+    print("unit_vector:", u)
+    assert u == Vec3(1, 0, 0)
+
+    # __repr__ 官方字符串表示
+    print("__repr__:", repr(v))
+    assert eval(repr(v)) == v
+
+    print("\n所有测试通过！")
+
