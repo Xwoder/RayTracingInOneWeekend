@@ -291,6 +291,19 @@ class Vec3:
         """
         return math.sqrt(self.length_squared())
 
+    def dot(self, other: "Vec3") -> Number:
+        """
+        向量内积（点积），返回标量。
+        对应 C++ 的 dot(const vec3&, const vec3&)。
+
+        Args:
+            other (Vec3): 另一个向量。
+
+        Returns:
+            Number: 各分量乘积之和（x1*x2 + y1*y2 + z1*z2）
+        """
+        return self._x * other.x() + self._y * other.y() + self._z * other.z()
+
 
 Point3 = Vec3
 Color = Vec3
