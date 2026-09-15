@@ -274,25 +274,6 @@ class Vec3:
 
 
 Point3 = Vec3
-Color = Vec3
-
-
-def write_color(pixel_color: "Color") -> str:
-    """
-    将颜色转换为 PPM(P3) 格式的一行字符串（形如 "ir ig ib"）。
-    对应 C++ 的 write_color() 辅助函数，便于将 Color 直接写入输出流。
-
-    Args:
-        pixel_color (Color): 待输出的颜色（各分量应位于 [0, 1]）。
-
-    Returns:
-        str: 形如 "ir ig ib\\n" 的字符串，ir/ig/ib 为 0~255 的整数。
-    """
-    ir = int(255.999 * pixel_color.x)
-    ig = int(255.999 * pixel_color.y)
-    ib = int(255.999 * pixel_color.z)
-    return f"{ir} {ig} {ib}\n"
-
 
 if __name__ == '__main__':
     # __init__ 构造函数
