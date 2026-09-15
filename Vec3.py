@@ -271,18 +271,25 @@ class Vec3:
             return NotImplemented
         return self._x == other.x() and self._y == other.y() and self._z == other.z()
 
-    def length(self):
+    def length_squared(self) -> float:
         """
-        计算向量的欧几里得长度（模）
+        计算向量长度的平方（模的平方），即 x² + y² + z²。
+        对应 C++ 的 length_squared()。
 
         Returns:
-            float: 向量各分量平方和的算术平方根，即 sqrt(x² + y² + z²)
+            float: 各分量平方和
         """
-        return math.sqrt(
-            self._x ** 2 +
-            self._y ** 2 +
-            self._z ** 2
-        )
+        return self._x ** 2 + self._y ** 2 + self._z ** 2
+
+    def length(self) -> float:
+        """
+        计算向量的欧几里得长度（模），即 sqrt(length_squared())。
+        对应 C++ 的 length()（内部委托给 length_squared()）。
+
+        Returns:
+            float: 向量各分量平方和的算术平方根
+        """
+        return math.sqrt(self.length_squared())
 
 
 Point3 = Vec3
