@@ -27,15 +27,18 @@ def ray_color(ray: Ray) -> Color:
             0.5 * (N + 1)；未命中时为天空渐变背景色。
     """
     t = sphere.hit(ray)
+    color: Color
     if t > 0:
         # 命中：以交点处单位法线映射到 RGB 着色
         N = (ray.at(t) - sphere.center).unit_vector()
-        return (Color(N.x, N.y, N.z) + Vec3(1, 1, 1)) / 2
+        color = (Color(N.x, N.y, N.z) + Vec3(1, 1, 1)) / 2
+        return color
     else:
         # 未命中：返回天空渐变背景
         unit_direction = ray.direction.unit_vector()
         a = 0.5 * (unit_direction.y + 1.0)
-        return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
+        color = (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
+        return color
 
 
 def main() -> None:
