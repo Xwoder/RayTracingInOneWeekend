@@ -12,15 +12,16 @@ from Vec3 import Point3, Vec3
 sphere: Sphere = Sphere(Point3(0, 0, -1), 0.5)
 
 
-def ray_color(r: Ray) -> Color:
-    # 若光线击中位于 (0,0,-1)、半径为 0.5 的球，返回红色
-    t = sphere.hit(r)
+def ray_color(ray: Ray) -> Color:
+    t = sphere.hit(ray)
     if t > 0:
-        return Color(1, 0, 0)
+        # 命中：以交点处单位法线映射到 RGB 着色
+        N = (ray.at(t) - sphere.center).unit_vector()
+        return 0.5 * Color(N.x + 1, N.y + 1, N.z + 1)
 
-    # 否则返回天空渐变背景
-    unit_direction = r.direction.unit_vector()
-    a = (unit_direction.y + 1.0) / 2
+    # 未命中：返回天空渐变背景
+    unit_direction = ray.direction.unit_vector()
+    a = 0.5 * (unit_direction.y + 1.0)
     return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
 
 
