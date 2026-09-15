@@ -87,6 +87,28 @@ class Vec3:
         """
         return Vec3(-self._x, -self._y, -self._z)
 
+    def __getitem__(self, i: int) -> Number:
+        """
+        下标访问运算符（v[i]），返回第 i 个分量。
+        对应 C++ 的 double operator[](int i) const。
+
+        Args:
+            i (int): 分量索引，0 表示 x，1 表示 y，2 表示 z。
+
+        Returns:
+            Number: 对应的分量值
+
+        Raises:
+            IndexError: 当索引不在 0~2 范围内时抛出
+        """
+        if i == 0:
+            return self._x
+        if i == 1:
+            return self._y
+        if i == 2:
+            return self._z
+        raise IndexError("Vec3 index out of range")
+
     def length(self):
         """
         计算向量的欧几里得长度（模）
