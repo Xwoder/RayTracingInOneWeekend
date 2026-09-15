@@ -164,6 +164,27 @@ class Vec3:
             self._z *= other
         return self
 
+    def __itruediv__(self, other: "Vec3 | Number") -> "Vec3":
+        """
+        原地除法赋值运算符（v /= t 或 v /= u），就地修改自身并返回自身。
+        对应 C++ 的 vec3& operator/=(double t)，其实现为 *this *= 1/t。
+        - 标量 t：委托给 __imul__(1/t)（即乘以倒数）。
+        - 向量 u：逐分量相除。
+
+        Args:
+            other (Vec3 | Number): 右侧操作数，可为标量或向量。
+
+        Returns:
+            Vec3: 自身（已就地修改）
+        """
+        if isinstance(other, Vec3):
+            self._x /= other.x()
+            self._y /= other.y()
+            self._z /= other.z()
+        else:
+            self.__imul__(1 / other)
+        return self
+
     def __add__(self, other: "Vec3") -> "Vec3":
         """
         向量加法（v + u），返回新向量（对应 C++ 的 operator+）。
