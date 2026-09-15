@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import math
 from typing import Sequence
 
@@ -288,3 +286,5 @@ if __name__ == '__main__':
 
     print(s1.x, s1.y, s1.z)
     print(s2.x, s2.y, s2.z)
+
+    print(s1 - s2)
