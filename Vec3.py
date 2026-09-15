@@ -77,6 +77,16 @@ class Vec3:
         """
         return self._z
 
+    def __neg__(self) -> "Vec3":
+        """
+        一元负号运算符（-v），返回各分量取反的新向量。
+        对应 C++ 的 vec3 operator-() const。
+
+        Returns:
+            Vec3: 各分量取反后的新向量
+        """
+        return Vec3(-self._x, -self._y, -self._z)
+
     def length(self):
         """
         计算向量的欧几里得长度（模）
