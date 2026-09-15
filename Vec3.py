@@ -10,9 +10,9 @@ class Vec3:
     z: Number
 
     def __init__(self,
-                 x: Number,
-                 y: Number,
-                 z: Number):
+                 x: Number = 0,
+                 y: Number = 0,
+                 z: Number = 0):
         """
         初始化三维向量，使用给定的三个分量设置 x、y、z 坐标。
 
@@ -59,15 +59,15 @@ class Vec3:
         """
         return math.sqrt(
             self.x ** 2 +
-                self.y ** 2 +
-                self.z ** 2
-            )
+            self.y ** 2 +
+            self.z ** 2
+        )
 
 
 if __name__ == '__main__':
     v = Vec3(3, 4, 5)
-    s1 = Vec3.from_sequence([1,2,3])
-    s2 = Vec3.from_sequence((1,2,3))
+    s1 = Vec3.from_sequence([1, 2, 3])
+    s2 = Vec3.from_sequence((1, 2, 3))
 
     print(v.x, v.y, v.z)
     print(f"{v.length() = }")
