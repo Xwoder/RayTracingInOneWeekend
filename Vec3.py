@@ -109,6 +109,22 @@ class Vec3:
             return self._z
         raise IndexError("Vec3 index out of range")
 
+    def __iadd__(self, other: "Vec3") -> "Vec3":
+        """
+        原地加法赋值运算符（v += u），将自身各分量加上 other 的对应分量，
+        并返回自身（对应 C++ 的 vec3& operator+=(const vec3& v)）。
+
+        Args:
+            other (Vec3): 加到自身的另一个向量。
+
+        Returns:
+            Vec3: 自身（已就地修改）
+        """
+        self._x += other.x()
+        self._y += other.y()
+        self._z += other.z()
+        return self
+
     def length(self):
         """
         计算向量的欧几里得长度（模）
