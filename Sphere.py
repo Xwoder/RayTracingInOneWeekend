@@ -1,4 +1,7 @@
+import math
+
 from Number import Number
+from Ray import Ray
 from Vec3 import Point3, Vec3
 
 
@@ -59,6 +62,36 @@ class Sphere:
             return NotImplemented
         return self._center == other.center and self._radius == other.radius
 
+    def hit(self, r: Ray) -> Number:
+        """
+        判断光线是否击中本球体，并返回最近的正向交点参数 t。
+
+        对应 C++ 的 hit_sphere（升级版）。求解球面方程
+        |P(t) - center|² = radius² 的展开式 a·t² + b·t + c = 0，其中：
+            oc      = center - origin
+            a       = dot(dir, dir)
+            half_b  = dot(dir, oc)      # 注意 b = -2·half_b
+            c       = dot(oc, oc) - radius²
+            discriminant = half_b² - a·c
+        若判别式 < 0 则无实交点，返回 None；否则返回较小的正根
+        (-half_b - sqrt(discriminant)) / a（取离光线原点更近的交点）。
+
+        Args:
+            r (Ray): 待检测的光线。
+
+        Returns:
+            float | None: 最近正向交点的参数 t；光线未击中球体时返回 None。
+        """
+        oc: Vec3 = self._center - r.origin
+        a: Number = r.direction.dot(r.direction)
+        half_b: Number = r.direction.dot(oc)
+        c: Number = oc.dot(oc) - self._radius * self._radius
+        discriminant: Number = half_b * half_b - a * c
+        if discriminant < 0:
+            return None
+
+        return (half_b - math.sqrt(discriminant)) / a
+
 
 if __name__ == "__main__":
     s = Sphere(Point3(0, 0, 0), 1.5)
@@ -68,4 +101,18 @@ if __name__ == "__main__":
     assert s.radius == 1.5
     print(f"__repr__: {s!r}")
     assert eval(repr(s)) == s
+
+    # hit 光线-球体相交检测
+    # 沿 +z 方向、从原点射向球心在 (0,0,0)、半径 1 的球
+    r_hit = Ray(Point3(0, 0, -5), Vec3(0, 0, 1))
+    t = s.hit(r_hit)
+    print(f"hit (命中): t = {t}")
+    assert t is not None
+    assert abs(t - 3.5) < 1e-9  # 交点在 z = -5 + 3.5 = -1.5，距球心 1.5
+
+    # 完全错过球体（沿 +x 偏离）
+    r_miss = Ray(Point3(5, 0, -5), Vec3(0, 0, 1))
+    print(f"hit (未命中): {s.hit(r_miss)}")
+    assert s.hit(r_miss) is None
+
     print("\n所有测试通过！")
