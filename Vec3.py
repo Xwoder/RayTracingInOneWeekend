@@ -274,7 +274,6 @@ class Vec3:
 
 
 Point3 = Vec3
-Color = Vec3
 
 if __name__ == '__main__':
     # __init__ 构造函数
@@ -370,4 +369,3 @@ if __name__ == '__main__':
     assert eval(repr(v)) == v
 
     print("\n所有测试通过！")
-
