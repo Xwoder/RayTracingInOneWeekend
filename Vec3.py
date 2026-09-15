@@ -125,6 +125,99 @@ class Vec3:
         self._z += other.z()
         return self
 
+    def __isub__(self, other: "Vec3") -> "Vec3":
+        """
+        原地减法赋值运算符（v -= u），将自身各分量减去 other 的对应分量，
+        并返回自身（对应 C++ 的 vec3& operator-=(const vec3& v)）。
+
+        Args:
+            other (Vec3): 被减的向量。
+
+        Returns:
+            Vec3: 自身（已就地修改）
+        """
+        self._x -= other.x()
+        self._y -= other.y()
+        self._z -= other.z()
+        return self
+
+    def __imul__(self, other: "Vec3 | Number") -> "Vec3":
+        """
+        原地乘法赋值运算符（v *= t 或 v *= u），就地修改自身各分量，
+        并返回自身（对应 C++ 的 vec3& operator*=(double t)）。
+        - 标量 t：各分量乘以 t。
+        - 向量 u：逐分量相乘（Hadamard 积）。
+
+        Args:
+            other (Vec3 | Number): 右侧操作数，可为标量或向量。
+
+        Returns:
+            Vec3: 自身（已就地修改）
+        """
+        if isinstance(other, Vec3):
+            self._x *= other.x()
+            self._y *= other.y()
+            self._z *= other.z()
+        else:
+            self._x *= other
+            self._y *= other
+            self._z *= other
+        return self
+
+    def __add__(self, other: "Vec3") -> "Vec3":
+        """
+        向量加法（v + u），返回新向量（对应 C++ 的 operator+）。
+        不修改原向量。
+
+        Args:
+            other (Vec3): 被加的向量。
+
+        Returns:
+            Vec3: 分量相加后的新向量
+        """
+        return Vec3(self._x + other.x(), self._y + other.y(), self._z + other.z())
+
+    def __sub__(self, other: "Vec3") -> "Vec3":
+        """
+        向量减法（v - u），返回新向量（对应 C++ 的 operator-）。
+        不修改原向量。
+
+        Args:
+            other (Vec3): 被减的向量。
+
+        Returns:
+            Vec3: 分量相减后的新向量
+        """
+        return Vec3(self._x - other.x(), self._y - other.y(), self._z - other.z())
+
+    def __mul__(self, other: "Vec3 | Number") -> "Vec3":
+        """
+        乘法（v * t 或 v * u），返回新向量，不修改原向量。
+        - 标量 t：各分量乘以 t（对应 C++ 的 operator*(double)）。
+        - 向量 u：逐分量相乘（Hadamard 积）。
+
+        Args:
+            other (Vec3 | Number): 右侧操作数，可为标量或向量。
+
+        Returns:
+            Vec3: 相乘后的新向量
+        """
+        if isinstance(other, Vec3):
+            return Vec3(self._x * other.x(), self._y * other.y(), self._z * other.z())
+        return Vec3(self._x * other, self._y * other, self._z * other)
+
+    def __rmul__(self, other: "Number") -> "Vec3":
+        """
+        右乘（t * v），使标量可写在左侧。直接复用 __mul__。
+
+        Args:
+            other (Number): 左侧的标量。
+
+        Returns:
+            Vec3: 相乘后的新向量
+        """
+        return self.__mul__(other)
+
     def length(self):
         """
         计算向量的欧几里得长度（模）
