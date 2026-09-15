@@ -1,5 +1,5 @@
 from Number import Number
-from Vec3 import Point3
+from Vec3 import Point3, Vec3
 
 
 class Sphere:
@@ -42,6 +42,22 @@ class Sphere:
             str: 包含球心与半径的字符串表示
         """
         return f"Sphere(center={self._center!r}, radius={self._radius!r})"
+
+    def __eq__(self, other: object) -> bool:
+        """
+        相等判断（s == u），当球心与半径都相等时返回 True。
+        对应 C++ 的 operator==。若 other 不是 Sphere，则返回 NotImplemented
+        交由 Python 处理（通常得到 False）。
+
+        Args:
+            other (object): 比较对象。
+
+        Returns:
+            bool: 球心与半径是否全部相等
+        """
+        if not isinstance(other, Sphere):
+            return NotImplemented
+        return self._center == other.center and self._radius == other.radius
 
 
 if __name__ == "__main__":
