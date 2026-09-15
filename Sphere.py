@@ -1,10 +1,10 @@
 import math
 
+from HitRecord import HitRecord
+from Hitable import Hitable
 from Number import Number
 from Ray import Ray
 from Vec3 import Point3, Vec3
-from HitRecord import HitRecord
-from Hitable import Hitable
 
 
 class Sphere(Hitable):
@@ -65,20 +65,19 @@ class Sphere(Hitable):
             return NotImplemented
         return self._center == other.center and self._radius == other.radius
 
-    def hit(self, r: Ray) -> "HitRecord | None":
+    def hit(self, r: Ray) -> HitRecord | None:
         """
         判断光线是否击中本球体，命中时返回记录交点信息的 HitRecord。
 
         对应《Ray Tracing in One Weekend》中 hittable::hit 的球体实现。
-        求解球面方程 |P(t) - center|² = radius² 的展开式
-        a·t² + b·t + c = 0，其中：
-            oc      = center - origin
-            a       = dot(dir, dir)
-            b       = -2·dot(dir, oc)
-            c       = dot(oc, oc) - radius²
-            discriminant = b² - 4·a·c
+        求解球面方程 |P(t) - center|² = radius² 的展开式，引入中间变量 h 简化计算：
+            oc          = center - origin
+            a           = dot(dir, dir)
+            h           = dot(dir, oc)
+            c           = dot(oc, oc) - radius²
+            discriminant = h² - a·c
         若判别式 < 0 则无实交点，返回 None；否则取较小的正根
-        (-b - sqrt(discriminant)) / (2·a) 作为最近正向交点，并构造包含交点坐标 p、
+        (h - sqrt(discriminant)) / a 作为最近正向交点，并构造包含交点坐标 p、
         单位外法向量 normal = (p - center).unit_vector()、参数 t 的 HitRecord 返回。
 
         Args:
@@ -88,18 +87,19 @@ class Sphere(Hitable):
             HitRecord | None: 命中时返回填充好的 HitRecord，未命中返回 None。
         """
         oc: Vec3 = self._center - r.origin
+
         a: Number = r.direction.dot(r.direction)
-        b: Number = -2.0 * r.direction.dot(oc)
+        h: Number = r.direction.dot(oc)
         c: Number = oc.dot(oc) - self._radius * self._radius
-        discriminant: Number = b * b - 4.0 * a * c
+        discriminant: Number = h * h - a * c
         if discriminant < 0:
             return None
 
         sqrt_d: Number = math.sqrt(discriminant)
-        t: Number = (-b - sqrt_d) / (2.0 * a)
+        t: Number = (h - sqrt_d) / a
         if t <= 0:
             # 取离光线原点更近的正向交点；若较小根非正，尝试较大根
-            t = (-b + sqrt_d) / (2.0 * a)
+            t = (h + sqrt_d) / a
             if t <= 0:
                 return None
 
