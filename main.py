@@ -5,10 +5,20 @@ import sys
 from Camera import Camera
 from Color import Color, write_color
 from Ray import Ray
-from Vec3 import Vec3
+from Sphere import Sphere
+from Vec3 import Point3, Vec3
+
+# 场景中待检测的物体
+sphere: Sphere = Sphere(Point3(0, 0, -1), 0.5)
 
 
-def ray_color(r: Ray):
+def ray_color(r: Ray) -> Color:
+    # 若光线击中位于 (0,0,-1)、半径为 0.5 的球，返回红色
+    t = sphere.hit(r)
+    if t is not None and t > 0:
+        return Color(1, 0, 0)
+
+    # 否则返回天空渐变背景
     unit_direction = r.direction.unit_vector()
     a = (unit_direction.y + 1.0) / 2
     return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
