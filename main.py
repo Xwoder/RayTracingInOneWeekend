@@ -1,4 +1,4 @@
-# Ray Tracing in One Weekend - image gradient (Python port)
+#!/usr/bin/python
 
 import sys
 
@@ -13,16 +13,29 @@ sphere: Sphere = Sphere(Point3(0, 0, -1), 0.5)
 
 
 def ray_color(ray: Ray) -> Color:
+    """
+    计算光线在场景中的着色颜色（对应《Ray Tracing in One Weekend》的 ray_color）。
+
+    若光线与场景中的球体相交（交点参数 t > 0），则以交点处的单位法线
+    映射为 RGB 颜色返回；否则返回按光线方向 y 分量插值出的天空渐变背景色。
+
+    Args:
+        ray (Ray): 待着色的光线，其原点为相机位置，方向指向当前像素。
+
+    Returns:
+        Color: 该光线对应的颜色。命中球体时为法线映射色
+            0.5 * (N + 1)；未命中时为天空渐变背景色。
+    """
     t = sphere.hit(ray)
     if t > 0:
         # 命中：以交点处单位法线映射到 RGB 着色
         N = (ray.at(t) - sphere.center).unit_vector()
         return 0.5 * Color(N.x + 1, N.y + 1, N.z + 1)
-
-    # 未命中：返回天空渐变背景
-    unit_direction = ray.direction.unit_vector()
-    a = 0.5 * (unit_direction.y + 1.0)
-    return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
+    else:
+        # 未命中：返回天空渐变背景
+        unit_direction = ray.direction.unit_vector()
+        a = 0.5 * (unit_direction.y + 1.0)
+        return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
 
 
 def main() -> None:
