@@ -49,7 +49,6 @@ def main() -> None:
     # Render
     out_std.write(f"P3\n{image_width} {image_height}\n255\n")
 
-
     for row in range(image_height):
         out_err.write(f"Rendering row {row}\n")
         for col in range(image_width):
