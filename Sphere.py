@@ -85,8 +85,9 @@ class Sphere(Hitable):
             c           = dot(oc, oc) - radius²
             discriminant = h² - a·c
         若判别式 < 0 则无实交点，返回 None；否则依次检验两根是否在 [t_min, t_max]
-        区间内，取落在区间内的最近交点 t，并构造包含交点坐标 p、
-        单位外法向量 normal = (p - center).unit_vector()、参数 t 的 HitRecord 返回。
+        区间内，取落在区间内的最近交点 t，构造包含交点坐标 p、参数 t 的
+        HitRecord，并用单位外法向量 outward_normal = (p - center) / radius
+        调用 set_face_normal() 写入 front_face 与 normal（法线恒朝向光线来的一侧）。
 
         Args:
             ray (Ray): 待检测的光线。
@@ -116,8 +117,10 @@ class Sphere(Hitable):
 
         t: Number = root
         p: Point3 = ray.at(t)
-        normal: Vec3 = (p - self._center).unit_vector()
-        return HitRecord(p, normal, t)
+        outward_normal: Vec3 = (p - self._center) / self._radius
+        rec = HitRecord(p, Vec3.zero(), t)
+        rec.set_face_normal(ray, outward_normal)
+        return rec
 
 
 if __name__ == "__main__":
@@ -137,6 +140,10 @@ if __name__ == "__main__":
     assert rec_hit is not None
     assert abs(rec_hit.t - 3.5) < 1e-9  # 交点在 z = -5 + 3.5 = -1.5，距球心 1.5
     assert rec_hit.p == Point3(0, 0, -1.5)
+    # 光线从球外射入，命中正面；法线应指向 ray 来的一侧（-z）
+    assert rec_hit.front_face is True
+    assert rec_hit.normal == Vec3(0, 0, -1)
+    assert r_hit.direction.dot(rec_hit.normal) < 0
 
     # 完全错过球体（沿 +x 偏离）
     r_miss = Ray(Point3(5, 0, -5), Vec3(0, 0, 1))
@@ -153,5 +160,13 @@ if __name__ == "__main__":
     assert abs(rec_far.t - 6.5) < 1e-9
     # 下界更大：两个根都被排除
     assert s.hit(r_hit, 7.0, 100.0) is None
+
+    # 光线从球内射出：命中的是背面，法线应翻转到朝向光线来的一侧
+    r_inside = Ray(Point3(0, 0, 0), Vec3(0, 0, 1))
+    rec_inside = s.hit(r_inside)
+    assert rec_inside is not None
+    assert rec_inside.front_face is False
+    assert rec_inside.normal == Vec3(0, 0, -1)
+    assert r_inside.direction.dot(rec_inside.normal) < 0
 
     print("\n所有测试通过！")
