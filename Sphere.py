@@ -139,7 +139,7 @@ if __name__ == "__main__":
     print(f"hit (命中): rec = {rec_hit}")
     assert rec_hit is not None
     assert abs(rec_hit.t - 3.5) < 1e-9  # 交点在 z = -5 + 3.5 = -1.5，距球心 1.5
-    assert rec_hit.p == Point3(0, 0, -1.5)
+    assert rec_hit.point == Point3(0, 0, -1.5)
     # 光线从球外射入，命中正面；法线应指向 ray 来的一侧（-z）
     assert rec_hit.front_face is True
     assert rec_hit.normal == Vec3(0, 0, -1)

@@ -121,7 +121,7 @@ if __name__ == "__main__":
     print(f"hit (命中近球): {rec}")
     assert rec is not None
     assert abs(rec.t - 0.5) < 1e-9
-    assert rec.p == Point3(0, 0, -0.5)
+    assert rec.point == Point3(0, 0, -0.5)
     assert rec.front_face is True  # 光线从球外射入，命中正面
 
     # 下界限制为 [2.0, +∞) 时，近球（t≈0.5 与远交点 t≈1.5）均被排除，

@@ -25,7 +25,7 @@ class HitRecord:
     从而保证任意位置都有 dot(ray.direction, normal) <= 0。
     """
 
-    p: Point3
+    point: Point3
     normal: Vec3
     t: Number
     front_face: bool = False
