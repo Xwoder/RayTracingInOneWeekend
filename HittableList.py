@@ -23,29 +23,29 @@ class HittableList(Hitable):
 
     _objects: list[Hitable]
 
-    def __init__(self, object: Hitable | None = None):
+    def __init__(self, obj: Hitable | None = None):
         """
         构造一个可命中物体列表，可选地直接加入一个初始物体。
 
         Args:
-            object (Hitable | None): 可选的初始物体；提供时等价于构造后再 add 一次。
+            obj (Hitable | None): 可选的初始物体；提供时等价于构造后再 add 一次。
         """
         self._objects: list[Hitable] = []
-        if object is not None:
-            self.add(object)
+        if obj is not None:
+            self.add(obj)
 
     def clear(self) -> None:
         """清空列表中的所有物体（对应 C++ 的 clear()）。"""
         self._objects.clear()
 
-    def add(self, object: Hitable) -> None:
+    def add(self, obj: Hitable) -> None:
         """
         向列表中追加一个可命中物体（对应 C++ 的 add()）。
 
         Args:
-            object (Hitable): 要加入场景的物体，必须实现 Hitable 接口。
+            obj (Hitable): 要加入场景的物体，必须实现 Hitable 接口。
         """
-        self._objects.append(object)
+        self._objects.append(obj)
 
     @override
     def hit(
@@ -75,8 +75,8 @@ class HittableList(Hitable):
         closest_so_far: Number = ray_t_max
         hit_record: HitRecord | None = None
 
-        for object in self._objects:
-            temp_hit_record: HitRecord | None = object.hit(ray, ray_t_min, closest_so_far)
+        for obj in self._objects:
+            temp_hit_record: HitRecord | None = obj.hit(ray, ray_t_min, closest_so_far)
             if temp_hit_record is not None:
                 closest_so_far = temp_hit_record.t
                 hit_record = temp_hit_record
