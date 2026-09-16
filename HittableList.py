@@ -3,6 +3,7 @@ from typing import override
 
 from HitRecord import HitRecord
 from Hittable import Hittable
+from Interval import Interval
 from Number import Number
 from Ray import Ray
 
@@ -18,7 +19,7 @@ class HittableList(Hittable):
         - objects 容器（C++ 的 std::vector<shared_ptr<hittable>>）
         - add()  往容器中追加一个物体
         - clear() 清空容器
-        - hit()  遍历所有物体，保留 [ray_t_min, ray_t_max] 内 t 最小的那条命中
+        - hit()  遍历所有物体，保留 ray_t 区间内 t 最小的那条命中
     """
 
     _objects: list[Hittable]
@@ -62,13 +63,12 @@ class HittableList(Hittable):
     def hit(
             self,
             ray: Ray,
-            ray_t_min: Number = 0.0,
-            ray_t_max: Number = math.inf,
+            ray_t: Interval = Interval(0.0, math.inf),
     ) -> HitRecord | None:
         """
         检测光线是否击中列表中的任意物体，并返回最近的一次命中。
 
-        遍历所有物体，仅保留落在 [ray_t_min, ray_t_max] 区间内、且 t 比当前
+        遍历所有物体，仅保留落在区间 ray_t 内、且 t 比当前
         已知最近命中更小的那次命中（closest_so_far 随命中不断收紧上界），
         从而保证最终得到的是最近交点。
 
@@ -77,17 +77,19 @@ class HittableList(Hittable):
 
         Args:
             ray (Ray): 待检测的光线。
-            ray_t_min (Number): 光线参数 t 的下界（不含），默认 0.0。
-            ray_t_max (Number): 光线参数 t 的上界（不含），默认为正无穷。
+            ray_t (Interval): 光线参数 t 的有效区间（开区间，不含端点），
+                默认 Interval(0.0, +inf) 即 [0, +∞)。
 
         Returns:
             HitRecord | None: 命中最近物体时返回其 HitRecord；若全未命中返回 None。
         """
-        closest_so_far: Number = ray_t_max
+        closest_so_far: Number = ray_t.max
         hit_record: HitRecord | None = None
 
         for obj in self._objects:
-            temp_hit_record: HitRecord | None = obj.hit(ray, ray_t_min, closest_so_far)
+            temp_hit_record: HitRecord | None = obj.hit(
+                ray, Interval(ray_t.min, closest_so_far)
+            )
             if temp_hit_record is not None:
                 closest_so_far = temp_hit_record.t
                 hit_record = temp_hit_record
@@ -126,7 +128,7 @@ if __name__ == "__main__":
 
     # 下界限制为 [2.0, +∞) 时，近球（t≈0.5 与远交点 t≈1.5）均被排除，
     # 应命中远球（t≈2.5）
-    rec_far = world.hit(r, 2.0)
+    rec_far = world.hit(r, Interval(2.0, math.inf))
     print(f"hit (限制下界命中远球): {rec_far}")
     assert rec_far is not None
     assert abs(rec_far.t - 2.5) < 1e-9

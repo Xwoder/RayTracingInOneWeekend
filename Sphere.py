@@ -3,6 +3,7 @@ from typing import override
 
 from HitRecord import HitRecord
 from Hittable import Hittable
+from Interval import Interval
 from Number import Number
 from Point3 import Point3
 from Ray import Ray
@@ -71,8 +72,7 @@ class Sphere(Hittable):
     def hit(
             self,
             ray: Ray,
-            ray_t_min: Number = 0.0,
-            ray_t_max: Number = math.inf,
+            ray_t: Interval = Interval(0.0, math.inf),
     ) -> HitRecord | None:
         """
         判断光线是否击中本球体，命中时返回记录交点信息的 HitRecord。
@@ -84,15 +84,15 @@ class Sphere(Hittable):
             h           = dot(dir, oc)
             c           = dot(oc, oc) - radius²
             discriminant = h² - a·c
-        若判别式 < 0 则无实交点，返回 None；否则依次检验两根是否在 [t_min, t_max]
-        区间内，取落在区间内的最近交点 t，构造包含交点坐标 p、参数 t 的
+        若判别式 < 0 则无实交点，返回 None；否则依次检验两根是否落在区间
+        ray_t（开区间）内，取落在区间内的最近交点 t，构造包含交点坐标 p、参数 t 的
         HitRecord，并用单位外法向量 outward_normal = (p - center) / radius
         调用 set_face_normal() 写入 front_face 与 normal（法线恒朝向光线来的一侧）。
 
         Args:
             ray (Ray): 待检测的光线。
-            ray_t_min (Number): 光线参数 t 的下界（不含），默认 0.0。
-            ray_t_max (Number): 光线参数 t 的上界（不含），默认为正无穷。
+            ray_t (Interval): 光线参数 t 的有效区间（开区间，不含端点），
+                默认 Interval(0.0, +inf) 即 [0, +∞)。
 
         Returns:
             HitRecord | None: 命中时返回填充好的 HitRecord，未命中返回 None。
@@ -109,10 +109,10 @@ class Sphere(Hittable):
         sqrt_d: Number = math.sqrt(discriminant)
         root: Number = (h - sqrt_d) / a
 
-        if not (ray_t_min < root < ray_t_max):
+        if not ray_t.surrounds(root):
             root = (h + sqrt_d) / a
 
-            if not (ray_t_min < root < ray_t_max):
+            if not ray_t.surrounds(root):
                 return None
 
         p: Point3 = ray.at(root)
@@ -151,15 +151,15 @@ if __name__ == "__main__":
     assert s.hit(r_miss) is None
 
     # t 区间限制：交点 t=3.5 落在 [0, 100) 内应命中
-    assert s.hit(r_hit, 0.0, 100.0) is not None
+    assert s.hit(r_hit, Interval(0.0, 100.0)) is not None
     # 上界过小，两个根（3.5, 6.5）都被排除
-    assert s.hit(r_hit, 0.0, 3.0) is None
+    assert s.hit(r_hit, Interval(0.0, 3.0)) is None
     # 下界过大：近根 3.5 被排除，远根 6.5 仍落在区间内，应命中
-    rec_far = s.hit(r_hit, 4.0, 100.0)
+    rec_far = s.hit(r_hit, Interval(4.0, 100.0))
     assert rec_far is not None
     assert abs(rec_far.t - 6.5) < 1e-9
     # 下界更大：两个根都被排除
-    assert s.hit(r_hit, 7.0, 100.0) is None
+    assert s.hit(r_hit, Interval(7.0, 100.0)) is None
 
     # 光线从球内射出：命中的是背面，法线应翻转到朝向光线来的一侧
     r_inside = Ray(Point3(0, 0, 0), Vec3(0, 0, 1))

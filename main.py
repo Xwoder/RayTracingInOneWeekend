@@ -7,6 +7,7 @@ from Camera import Camera
 from Color import Color, write_color
 from HitRecord import HitRecord
 from HittableList import HittableList
+from Interval import Interval
 from Point3 import Point3
 from Ray import Ray
 from Sphere import Sphere
@@ -35,8 +36,8 @@ def ray_color(ray: Ray, world: HittableList) -> Color:
         Color: 该光线对应的颜色。命中物体时为法线映射色
             0.5 * (N + 1)；未命中时为天空渐变背景色。
     """
-    # world.hit 命中时返回 HitRecord，未命中返回 None（对应 C++ 的 world.hit(r, 0, inf, hit_record)）
-    hit_record: HitRecord | None = world.hit(ray, 0.0, math.inf)
+    # world.hit 命中时返回 HitRecord，未命中返回 None（对应 C++ 的 world.hit(r, interval(0, inf), hit_record)）
+    hit_record: HitRecord | None = world.hit(ray, Interval(0.0, math.inf))
     if hit_record is not None:
         # 命中：以交点处单位法线映射到 RGB 着色（0.5 * (N + 1)）
         return 0.5 * (hit_record.normal + Color(1.0, 1.0, 1.0))
