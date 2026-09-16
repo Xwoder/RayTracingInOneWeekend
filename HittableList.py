@@ -1,8 +1,8 @@
 import math
 from typing import override
 
-from Hitable import Hitable
 from HitRecord import HitRecord
+from Hitable import Hitable
 from Number import Number
 from Ray import Ray
 
@@ -34,11 +34,6 @@ class HittableList(Hitable):
         if object is not None:
             self.add(object)
 
-    @property
-    def objects(self) -> list[Hitable]:
-        """返回内部物体列表（对应 C++ 的公有成员 objects）。"""
-        return self._objects
-
     def clear(self) -> None:
         """清空列表中的所有物体（对应 C++ 的 clear()）。"""
         self._objects.clear()
@@ -54,10 +49,10 @@ class HittableList(Hitable):
 
     @override
     def hit(
-        self,
-        ray: Ray,
-        ray_t_min: Number = 0.0,
-        ray_t_max: Number = math.inf,
+            self,
+            ray: Ray,
+            ray_t_min: Number = 0.0,
+            ray_t_max: Number = math.inf,
     ) -> HitRecord | None:
         """
         检测光线是否击中列表中的任意物体，并返回最近的一次命中。
