@@ -133,4 +133,4 @@ if __name__ == "__main__":
     assert len(world.objects) == 0
     assert world.hit(r) is None
 
-    print("\n所有测试通过！")
+    print("\n所有测试通过")

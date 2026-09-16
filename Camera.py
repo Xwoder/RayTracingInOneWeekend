@@ -51,4 +51,4 @@ if __name__ == "__main__":
     assert c2.position == Point3(1, 2, 3)
     assert c2.direction == Vec3(0, 1, 0)
 
-    print("\n所有测试通过！")
+    print("\n所有测试通过")

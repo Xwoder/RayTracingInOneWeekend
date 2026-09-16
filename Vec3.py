@@ -375,4 +375,4 @@ if __name__ == '__main__':
     print(f"__repr__: {v!r}")
     assert eval(repr(v)) == v
 
-    print("\n所有测试通过！")
+    print("\n所有测试通过")

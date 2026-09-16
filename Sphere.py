@@ -169,4 +169,4 @@ if __name__ == "__main__":
     assert rec_inside.normal == Vec3(0, 0, -1)
     assert r_inside.direction.dot(rec_inside.normal) < 0
 
-    print("\n所有测试通过！")
+    print("\n所有测试通过")
