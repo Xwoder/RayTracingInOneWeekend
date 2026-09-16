@@ -7,7 +7,7 @@ from Number import Number
 from Ray import Ray
 
 
-class Hitable(ABC):
+class Hittable(ABC):
     """
     可命中物体接口（抽象基类）
 

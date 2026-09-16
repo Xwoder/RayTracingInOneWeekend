@@ -2,19 +2,19 @@ import math
 from typing import override
 
 from HitRecord import HitRecord
-from Hitable import Hitable
+from Hittable import Hittable
 from Number import Number
 from Point3 import Point3
 from Ray import Ray
 from Vec3 import Vec3
 
 
-class Sphere(Hitable):
+class Sphere(Hittable):
     """
     球体类
 
     一个球体由球心 center 与半径 radius 定义。
-    实现 Hitable 接口，提供光线-球体相交检测 hit()。
+    实现 Hittable 接口，提供光线-球体相交检测 hit()。
     """
 
     _center: Point3

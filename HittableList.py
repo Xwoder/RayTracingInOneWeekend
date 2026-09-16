@@ -2,16 +2,16 @@ import math
 from typing import override
 
 from HitRecord import HitRecord
-from Hitable import Hitable
+from Hittable import Hittable
 from Number import Number
 from Ray import Ray
 
 
-class HittableList(Hitable):
+class HittableList(Hittable):
     """
     可命中物体列表（场景容器）
 
-    持有多个可命中物体（Hitable），并把 hit 检测委托给其中的每一个，
+    持有多个可命中物体（Hittable），并把 hit 检测委托给其中的每一个，
     返回所有物体中最靠近光线原点（t 最小）的那次命中记录。
 
     对应《Ray Tracing in One Weekend》中的 hittable_list：
@@ -21,16 +21,16 @@ class HittableList(Hitable):
         - hit()  遍历所有物体，保留 [ray_t_min, ray_t_max] 内 t 最小的那条命中
     """
 
-    _objects: list[Hitable]
+    _objects: list[Hittable]
 
-    def __init__(self, obj: Hitable | None = None):
+    def __init__(self, obj: Hittable | None = None):
         """
         构造一个可命中物体列表，可选地直接加入一个初始物体。
 
         Args:
-            obj (Hitable | None): 可选的初始物体；提供时等价于构造后再 add 一次。
+            obj (Hittable | None): 可选的初始物体；提供时等价于构造后再 add 一次。
         """
-        self._objects: list[Hitable] = []
+        self._objects: list[Hittable] = []
         if obj is not None:
             self.add(obj)
 
@@ -38,12 +38,23 @@ class HittableList(Hitable):
         """清空列表中的所有物体（对应 C++ 的 clear()）。"""
         self._objects.clear()
 
-    def add(self, obj: Hitable) -> None:
+    def __len__(self) -> int:
+        """
+        返回列表中可命中物体的数量（对应 C++ objects.size()）。
+
+        实现后可直接用内置 len() 获取元素个数，例如 len(world)。
+
+        Returns:
+            int: 当前列表中的物体数量。
+        """
+        return len(self._objects)
+
+    def add(self, obj: Hittable) -> None:
         """
         向列表中追加一个可命中物体（对应 C++ 的 add()）。
 
         Args:
-            obj (Hitable): 要加入场景的物体，必须实现 Hitable 接口。
+            obj (Hittable): 要加入场景的物体，必须实现 Hittable 接口。
         """
         self._objects.append(obj)
 
@@ -94,14 +105,15 @@ if __name__ == "__main__":
     far = Sphere(Point3(0, 0, -3), 0.5)
 
     world = HittableList()
-    assert len(world.objects) == 0
+    assert len(world) == 0
     world.add(near)
     world.add(far)
-    assert len(world.objects) == 2
+    # __len__ 返回物体数量
+    assert len(world) == 2
 
     # 用构造函数直接加入
     world2 = HittableList(near)
-    assert len(world2.objects) == 1
+    assert len(world2) == 1
 
     # 沿 -z 方向、从原点射出应命中近球（t≈0.5），而非远球（t≈2.5）
     r = Ray(Point3(0, 0, 0), Vec3(0, 0, -1))
@@ -125,7 +137,7 @@ if __name__ == "__main__":
 
     # clear 清空后不再命中
     world.clear()
-    assert len(world.objects) == 0
+    assert len(world) == 0
     assert world.hit(r) is None
 
     print("\n所有测试通过")
