@@ -1,5 +1,4 @@
 import math
-from typing import Self
 
 from Number import Number
 
@@ -26,7 +25,7 @@ class Interval:
 
     def __init__(self,
                  min_value: Number = math.inf,
-                 max_value: Number = -math.inf):
+                 max_value: Number = -math.inf) -> None:
         """
         构造一个区间。
 
@@ -87,6 +86,13 @@ class Interval:
         """
         return self._min < x < self._max
 
+    def clamp(self, x: Number):
+        if x < self._min:
+            return min
+        if x > self._max:
+            return max
+        return x
+
     def __repr__(self) -> str:
         """
         返回区间的官方字符串表示，形如 Interval(min, max)。
@@ -114,9 +120,8 @@ class Interval:
 
 
 # 静态成员（对应 C++ 的 interval::empty 与 interval::universe）
-Interval.empty = Interval(math.inf, -math.inf)     # 空区间
+Interval.empty = Interval(math.inf, -math.inf)  # 空区间
 Interval.universe = Interval(-math.inf, math.inf)  # 全空间
-
 
 if __name__ == "__main__":
     # 默认构造：空区间
