@@ -6,7 +6,9 @@ from Color import Color, write_color
 from HitRecord import HitRecord
 from Hittable import Hittable
 from Interval import Interval
+from Number import Number
 from Point3 import Point3
+from Random import random_number
 from Ray import Ray
 from Vec3 import Vec3
 
@@ -35,19 +37,25 @@ class Camera:
             color ray_color(const ray& r, const hittable& world) const;
         };
     """
+    _aspect_ratio: Number
+    _image_width: int
+    _samples_per_pixel: int = 10
 
     def __init__(self,
-                 aspect_ratio: float = 1,
-                 image_width: int = 400):
+                 aspect_ratio: Number = 1,
+                 image_width: int = 400,
+                 samples_per_pixel: int = 10):
         """
         构造一台相机。
 
         Args:
             aspect_ratio (float): 图像宽高比（宽度 / 高度），默认 1.0。
             image_width (int): 渲染图像的像素宽度，默认 100。
+            samples_per_pixel (int): 每个像素的采样次数，默认 10。
         """
         self._aspect_ratio = aspect_ratio
         self._image_width = image_width
+        self._samples_per_pixel = samples_per_pixel
 
     def render(self,
                world: Hittable,
@@ -70,15 +78,14 @@ class Camera:
             sys.stderr.write(f"\rScanlines remaining: {self.image_height - j} ")
             sys.stderr.flush()
             for i in range(self._image_width):
-                pixel_center = (
-                        self.pixel00_loc
-                        + (i * self.pixel_delta_u)
-                        + (j * self.pixel_delta_v)
-                )
-                ray_direction = pixel_center - self.center
-                ray = Ray(self.center, ray_direction)
+                pixel_color = Color(0, 0, 0)
+                for _ in range(self._samples_per_pixel):
+                    ray: Ray = self.get_ray(i, j)
+                    color: Color = self.ray_color(ray, world)
+                    pixel_color += color
 
-                pixel_color = self.ray_color(ray, world)
+                pixel_color /= self._samples_per_pixel
+
                 write_color(out, pixel_color)
 
         sys.stderr.write("\rDone.")
@@ -122,6 +129,47 @@ class Camera:
         self.pixel00_loc = (
                 viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v)
         )
+
+    def sample_square(self) -> Vec3:
+        """
+        返回 [-.5,-.5]-[+.5,+.5] 单位方形内的随机点。
+
+        在一个像素内部随机选取一个位置，并返回这个位置相对于像素中心的二维偏移量。
+        用于抗锯齿：在每个像素内随机抖动采样点，使边缘锯齿被平均掉。
+
+        Returns:
+            Vec3: z 分量为 0 的随机偏移向量。
+        """
+        return Vec3(x=random_number() - 0.5,
+                    y=random_number() - 0.5,
+                    z=0)
+
+    def get_ray(self, i: int, j: int) -> Ray:
+        """
+        构造一条从相机原点射向像素 (i, j) 附近随机采样点的光线。
+
+        像素 (i, j) 的真实中心会因 sample_square() 的随机偏移而抖动，
+        因此每个像素会发射多条略有差异的光线，最终由 render 求平均实现抗锯齿。
+
+        Args:
+            i (int): 像素列下标（水平方向，对应 pixel_delta_u）。
+            j (int): 像素行下标（垂直方向，对应 pixel_delta_v）。
+
+        Returns:
+            Ray: 经过随机抖动的相机光线。
+        """
+        offset: Vec3 = self.sample_square()
+        pixel_sample: Point3 = (
+                self.pixel00_loc
+                + ((i + offset.x) * self.pixel_delta_u)
+                + ((j + offset.y) * self.pixel_delta_v)
+        )
+
+        ray_origin = self.center
+        ray_direction = pixel_sample - ray_origin
+
+        ray: Ray = Ray(ray_origin, ray_direction)
+        return ray
 
     def ray_color(self, ray: Ray, world: Hittable) -> Color:
         """
