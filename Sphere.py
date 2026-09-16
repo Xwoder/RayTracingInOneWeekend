@@ -69,10 +69,10 @@ class Sphere(Hitable):
 
     @override
     def hit(
-        self,
-        ray: Ray,
-        ray_t_min: Number = 0.0,
-        ray_t_max: Number = math.inf,
+            self,
+            ray: Ray,
+            ray_t_min: Number = 0.0,
+            ray_t_max: Number = math.inf,
     ) -> HitRecord | None:
         """
         判断光线是否击中本球体，命中时返回记录交点信息的 HitRecord。
@@ -115,10 +115,10 @@ class Sphere(Hitable):
             if not (ray_t_min < root < ray_t_max):
                 return None
 
+        p: Point3 = ray.at(root)
         t: Number = root
-        p: Point3 = ray.at(t)
         outward_normal: Vec3 = (p - self._center) / self._radius
-        rec = HitRecord(p, Vec3.zero(), t)
+        rec: HitRecord = HitRecord(p, outward_normal, t)
         rec.set_face_normal(ray, outward_normal)
         return rec
 
