@@ -1,45 +1,50 @@
 #!/usr/bin/python
 
+import math
 import sys
 
 from Camera import Camera
 from Color import Color, write_color
+from HitRecord import HitRecord
+from HittableList import HittableList
 from Point3 import Point3
 from Ray import Ray
 from Sphere import Sphere
-from Vec3 import  Vec3
+from Vec3 import Vec3
 
-# 场景中待检测的物体
-sphere: Sphere = Sphere(Point3(0, 0, -1), 0.5)
+# 场景
+world: HittableList = HittableList()
+# 小球体：球心 (0,0,-1)，半径 0.5
+world.add(Sphere(Point3(0, 0, -1), 0.5))
+# 大地平面：球心 (0,-100.5,-1)，半径 100（模拟地面）
+world.add(Sphere(Point3(0, -100.5, -1), 100))
 
 
-def ray_color(ray: Ray) -> Color:
+def ray_color(ray: Ray, world: HittableList) -> Color:
     """
     计算光线在场景中的着色颜色（对应《Ray Tracing in One Weekend》的 ray_color）。
 
-    若光线与场景中的球体相交，则以交点处的单位法线映射为 RGB 颜色返回；
+    若光线与场景中的任意物体相交，则以交点处的单位法线映射为 RGB 颜色返回；
     否则返回按光线方向 y 分量插值出的天空渐变背景色。
 
     Args:
         ray (Ray): 待着色的光线，其原点为相机位置，方向指向当前像素。
+        world (HittableList): 待检测的场景（可命中物体列表）。
 
     Returns:
-        Color: 该光线对应的颜色。命中球体时为法线映射色
+        Color: 该光线对应的颜色。命中物体时为法线映射色
             0.5 * (N + 1)；未命中时为天空渐变背景色。
     """
-    rec = sphere.hit(ray)
-    color: Color
-    if rec is not None:
-        # 命中：以交点处单位法线映射到 RGB 着色
-        N = rec.normal
-        color = (Color(N.x, N.y, N.z) + Vec3.one()) / 2
-        return color
+    # world.hit 命中时返回 HitRecord，未命中返回 None（对应 C++ 的 world.hit(r, 0, inf, hit_record)）
+    hit_record: HitRecord | None = world.hit(ray, 0.0, math.inf)
+    if hit_record is not None:
+        # 命中：以交点处单位法线映射到 RGB 着色（0.5 * (N + 1)）
+        return 0.5 * (hit_record.normal + Color(1.0, 1.0, 1.0))
     else:
         # 未命中：返回天空渐变背景
         unit_direction = ray.direction.unit_vector()
         a = 0.5 * (unit_direction.y + 1.0)
-        color = (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
-        return color
+        return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
 
 
 def main() -> None:
@@ -83,7 +88,7 @@ def main() -> None:
             pixel_center = pixel00_loc + (col * pixel_delta_u) + (row * pixel_delta_v)
             ray_direction = pixel_center - camera.position
             ray: Ray = Ray(camera.position, ray_direction)
-            pixel_color = ray_color(ray)
+            pixel_color = ray_color(ray, world)
             write_color(out_std, pixel_color)
     out_std.write("Done")
 
