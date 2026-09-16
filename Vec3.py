@@ -281,7 +281,6 @@ class Vec3:
         return cls(1, 1, 1)
 
 
-Point3 = Vec3
 
 if __name__ == '__main__':
     # __init__ 构造函数

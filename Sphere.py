@@ -4,8 +4,9 @@ from typing import override
 from HitRecord import HitRecord
 from Hitable import Hitable
 from Number import Number
+from Point3 import Point3
 from Ray import Ray
-from Vec3 import Point3, Vec3
+from Vec3 import Vec3
 
 
 class Sphere(Hitable):

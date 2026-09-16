@@ -4,9 +4,10 @@ import sys
 
 from Camera import Camera
 from Color import Color, write_color
+from Point3 import Point3
 from Ray import Ray
 from Sphere import Sphere
-from Vec3 import Point3, Vec3
+from Vec3 import  Vec3
 
 # 场景中待检测的物体
 sphere: Sphere = Sphere(Point3(0, 0, -1), 0.5)
