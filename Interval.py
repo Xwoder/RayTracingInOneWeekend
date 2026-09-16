@@ -88,9 +88,9 @@ class Interval:
 
     def clamp(self, x: Number):
         if x < self._min:
-            return min
+            return self._min
         if x > self._max:
-            return max
+            return self._max
         return x
 
     def __repr__(self) -> str:
