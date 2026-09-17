@@ -337,6 +337,36 @@ class Vec3:
                 unit_vector: Vec3 = p / math.sqrt(lensq)
                 return unit_vector
 
+    @classmethod
+    def random_on_hemisphere(cls, normal: Vec3) -> Vec3:
+        """
+        返回一个随机单位向量，且保证它落在 normal 所在的那一侧半球。
+
+        对应 C++ vec3.h 中的 inline 函数：
+            inline vec3 random_on_hemisphere(const vec3& normal) {
+                vec3 on_unit_sphere = random_unit_vector();
+                if (dot(on_unit_sphere, normal) > 0.0) // 与法线同半球
+                    return on_unit_sphere;
+                else
+                    return -on_unit_sphere;
+            }
+
+        做法很直接：先取一个随机单位向量，若它与 normal 的点积为负（说明落在
+        另一侧半球），就整体取反翻回来。结果仍是单位向量，且
+        dot(结果, normal) > 0。normal 只需指明方向，不必是单位长度。
+
+        Args:
+            normal (Vec3): 半球的方向（通常是命中点处的表面法线）。
+
+        Returns:
+            Vec3: 长度为 1、且与 normal 同侧的随机方向向量。
+        """
+        on_unit_sphere: Vec3 = cls.random_unit_vector()
+        # 与法线同半球（点积为正）则保留，否则翻到法线这一侧
+        if on_unit_sphere.dot(normal) > 0.0:
+            return on_unit_sphere
+        else:
+            return -on_unit_sphere
 
 
 if __name__ == '__main__':
@@ -462,6 +492,33 @@ if __name__ == '__main__':
     directions = [Vec3.random_unit_vector() for _ in range(50)]
     assert all(v.length_squared() > 1e-160 for v in directions)
     assert len({(v.x, v.y, v.z) for v in directions}) == 50
+
+    # random_on_hemisphere：结果与法线同侧（点积为正），且仍是单位向量
+    n = Vec3(0, 0, 1)
+    h = Vec3.random_on_hemisphere(n)
+    print(f"random_on_hemisphere: {h}")
+    assert h.dot(n) > 0.0
+    assert abs(h.length() - 1.0) < 1e-12
+
+    for _ in range(200):
+        d = Vec3.random_on_hemisphere(n)
+        assert d.dot(n) > 0.0
+        assert abs(d.length() - 1.0) < 1e-12
+        # 取反后的方向应落在另一侧半球
+        assert Vec3.random_on_hemisphere(-n).dot(-n) > 0.0
+
+    # 两个相反半球的结果应大致各占一半（说明确实有一半被翻转过）
+    flipped = sum(1 for _ in range(400)
+                  if Vec3.random_unit_vector().dot(n) < 0.0)
+    print(f"negative-side samples (of 400): {flipped}")
+    assert 120 < flipped < 280
+
+    # 任意方向的法线同样成立
+    for _ in range(50):
+        arbitrary = Vec3.random_unit_vector()
+        d = Vec3.random_on_hemisphere(arbitrary)
+        assert d.dot(arbitrary) > 0.0
+        assert abs(d.length() - 1.0) < 1e-12
 
     # __repr__ 官方字符串表示
     print(f"__repr__: {v!r}")
