@@ -199,7 +199,7 @@ class Camera:
         if depth <= 0:
             return Color(0, 0, 0)
 
-        hit_record: HitRecord | None = world.hit(ray, Interval(0.0, math.inf))
+        hit_record: HitRecord | None = world.hit(ray, Interval(0.001, math.inf))
         if hit_record is not None:
             # 命中：以交点处法线所在半球内的随机方向继续反射（漫反射）
             direction: Vec3 = Vec3.random_on_hemisphere(hit_record.normal)
