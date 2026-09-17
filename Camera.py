@@ -19,32 +19,37 @@ class Camera:
 
     封装渲染一帧所需的所有参数与逻辑：
 
-    - 公共参数：aspect_ratio（宽高比）、image_width（像素宽度）。
+    - 公共参数：aspect_ratio（宽高比）、image_width（像素宽度）、
+      samples_per_pixel（每像素采样数）、max_depth（光线最大反弹次数）。
     - render(world, out)：按 PPM 格式输出图像。
     - 私有状态：image_height、center、pixel00_loc、pixel_delta_u、
       pixel_delta_v，由 initialize() 根据公共参数计算。
-    - ray_color(r, world)：对单条光线着色（命中物体后沿法线所在半球内的
-      随机方向继续漫反射，否则返回天空渐变背景）。
+    - ray_color(r, depth, world)：对单条光线着色（depth 用尽返回黑色；
+      命中物体后沿法线所在半球内的随机方向继续漫反射，否则返回天空渐变背景）。
 
     对应 C++ 的：
         class camera {
           public:
-            double aspect_ratio = 1.0;
-            int    image_width  = 100;
+            double aspect_ratio      = 1.0;
+            int    image_width       = 100;
+            int    samples_per_pixel = 10;
+            int    max_depth         = 10;
             void render(const hittable& world);
           private:
             void initialize();
-            color ray_color(const ray& r, const hittable& world) const;
+            color ray_color(const ray& r, int depth, const hittable& world) const;
         };
     """
     _aspect_ratio: Number
     _image_width: int
     _samples_per_pixel: int = 10
+    _max_depth: int = 10
 
     def __init__(self,
                  aspect_ratio: Number = 1,
                  image_width: int = 400,
-                 samples_per_pixel: int = 10):
+                 samples_per_pixel: int = 10,
+                 max_depth: int = 10):
         """
         构造一台相机。
 
@@ -52,10 +57,12 @@ class Camera:
             aspect_ratio (float): 图像宽高比（宽度 / 高度），默认 1.0。
             image_width (int): 渲染图像的像素宽度，默认 100。
             samples_per_pixel (int): 每个像素的采样次数，默认 10。
+            max_depth (int): 光线进入场景后最大的反弹（bounce）次数，默认 10。
         """
         self._aspect_ratio = aspect_ratio
         self._image_width = image_width
         self._samples_per_pixel = samples_per_pixel
+        self._max_depth = max_depth
 
     def render(self,
                world: Hittable,
@@ -81,7 +88,7 @@ class Camera:
                 pixel_color = Color(0, 0, 0)
                 for _ in range(self._samples_per_pixel):
                     ray: Ray = self.get_ray(i, j)
-                    color: Color = self.ray_color(ray, world)
+                    color: Color = self.ray_color(ray, self._max_depth, world)
                     pixel_color += color
 
                 pixel_color /= self._samples_per_pixel
@@ -171,26 +178,32 @@ class Camera:
         ray: Ray = Ray(ray_origin, ray_direction)
         return ray
 
-    def ray_color(self, ray: Ray, world: Hittable) -> Color:
+    def ray_color(self, ray: Ray, depth: int, world: Hittable) -> Color:
         """
         计算单条光线 ray 在场景 world 中的颜色（对应 C++ camera::ray_color）。
 
+        先检查反弹深度 depth：若已用尽（depth <= 0），不再收集任何光，返回黑色。
         命中物体时，沿交点处法线所在半球内的随机方向生成一条新光线并
-        递归着色（漫反射 / Lambertian），结果乘以 0.5；未命中时，按光线
-        方向的 y 分量插值出天空渐变背景色。
+        递归着色（漫反射 / Lambertian，depth 减 1），结果乘以 0.5；
+        未命中时，按光线方向的 y 分量插值出天空渐变背景色。
 
         Args:
             ray (Ray): 待着色的光线，原点为相机位置，方向指向某像素。
+            depth (int): 剩余可用的反弹次数；每反弹一次递减，归零即停止。
             world (Hittable): 待检测的场景。
 
         Returns:
             Color: 该光线对应的颜色。
         """
+        # 反弹次数用尽，不再收集光，返回黑色
+        if depth <= 0:
+            return Color(0, 0, 0)
+
         hit_record: HitRecord | None = world.hit(ray, Interval(0.0, math.inf))
         if hit_record is not None:
             # 命中：以交点处法线所在半球内的随机方向继续反射（漫反射）
             direction: Vec3 = Vec3.random_on_hemisphere(hit_record.normal)
-            return 0.5 * self.ray_color(Ray(hit_record.point, direction), world)
+            return 0.5 * self.ray_color(Ray(hit_record.point, direction), depth - 1, world)
 
         # 未命中：天空渐变背景
         unit_direction = ray.direction.unit_vector()
