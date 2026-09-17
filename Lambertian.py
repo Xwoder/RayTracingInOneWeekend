@@ -15,7 +15,7 @@ class Lambertian(Material):
     所在半球内的随机方向散射（余弦加权），衰减系数即表面反照率 albedo。
 
     注意：本类仅提供材质数据结构与 scatter 接口雏形，当前相机
-    （Camera.ray_color）尚未使用 rec.material，因此尚未参与实际着色。
+    （Camera.ray_color）尚未使用 hit_record.material，因此尚未参与实际着色。
     """
 
     _albedo: Color
@@ -38,23 +38,23 @@ class Lambertian(Material):
     @override
     def scatter(self,
                 r_in: Ray,
-                rec: HitRecord) -> tuple[Color, Ray] | None:
+                hit_record: HitRecord) -> tuple[Color, Ray] | None:
         """
         在命中处产生一条漫反射散射光线。
 
         Args:
             r_in (Ray): 入射光线（此处未使用，保留以符合 Material 接口）。
-            rec (HitRecord): 命中记录（提供交点与法线）。
+            hit_record (HitRecord): 命中记录（提供交点与法线）。
 
         Returns:
             tuple[Color, Ray] | None: 始终返回 (反照率, 散射光线)。
         """
-        scatter_direction: Vec3 = rec.normal + Vec3.random_unit_vector()
+        scatter_direction: Vec3 = hit_record.normal + Vec3.random_unit_vector()
 
         if scatter_direction.near_zero():
-            scatter_direction = rec.normal
+            scatter_direction = hit_record.normal
 
-        scattered_ray: Ray = Ray(rec.point, scatter_direction)
+        scattered_ray: Ray = Ray(hit_record.point, scatter_direction)
         return self._albedo, scattered_ray
 
 

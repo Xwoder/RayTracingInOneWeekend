@@ -26,7 +26,7 @@ class Material(ABC):
     """
 
     @abstractmethod
-    def scatter(self, r_in: Ray, rec: HitRecord) -> tuple[Color, Ray] | None:
+    def scatter(self, r_in: Ray, hit_record: HitRecord) -> tuple[Color, Ray] | None:
         """
         计算入射光线 r_in 在 rec 处命中后的散射结果。
 
