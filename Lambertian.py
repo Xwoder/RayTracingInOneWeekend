@@ -55,7 +55,8 @@ class Lambertian(Material):
             scatter_direction = hit_record.normal
 
         scattered_ray: Ray = Ray(hit_record.point, scatter_direction)
-        return self._albedo, scattered_ray
+        attenuation = self._albedo
+        return attenuation , scattered_ray
 
 
 if __name__ == "__main__":
