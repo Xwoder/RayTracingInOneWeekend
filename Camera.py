@@ -218,6 +218,7 @@ if __name__ == "__main__":
     import io
 
     from HittableList import HittableList
+    from Lambertian import Lambertian
     from Sphere import Sphere
 
     # 构造并初始化：宽高比 16/9、宽 400 -> 高应为 225
@@ -240,7 +241,7 @@ if __name__ == "__main__":
 
     # 渲染极小场景到内存，校验 PPM 头与像素数
     tiny = Camera(aspect_ratio=1.0, image_width=3)
-    world = HittableList(Sphere(Point3(0, 0, -1), 0.5))
+    world = HittableList(Sphere(Point3(0, 0, -1), 0.5, Lambertian(Color(0.5, 0.5, 0.5))))
     buf = io.StringIO()
     tiny.render(world, out=buf)
     lines = buf.getvalue().splitlines()

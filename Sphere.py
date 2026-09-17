@@ -14,23 +14,26 @@ class Sphere(Hittable):
     """
     球体类
 
-    一个球体由球心 center 与半径 radius 定义。
+    一个球体由球心 center、半径 radius 与材质 material 定义。
     实现 Hittable 接口，提供光线-球体相交检测 hit()。
     """
 
     _center: Point3
     _radius: Number
+    _material: Material
 
-    def __init__(self, center: Point3, radius: Number):
+    def __init__(self, center: Point3, radius: Number, material: Material):
         """
         构造一个球体。
 
         Args:
             center (Point3): 球心坐标。
             radius (Number): 球的半径（float 或 int）。
+            material (Material): 球体表面所用的材质。
         """
         self._center = center
         self._radius = radius
+        self._material = material
 
     @property
     def center(self) -> Point3:
@@ -50,7 +53,7 @@ class Sphere(Hittable):
         Returns:
             str: 包含球心与半径的字符串表示
         """
-        return f"Sphere(center={self._center!r}, radius={self._radius!r})"
+        return f"Sphere(center={self._center!r}, radius={self._radius!r}, material={self._material!r})"
 
     def __eq__(self, other: object) -> bool:
         """
@@ -120,17 +123,29 @@ class Sphere(Hittable):
         outward_normal: Vec3 = (p - self._center) / self._radius
         rec: HitRecord = HitRecord(p, outward_normal, t)
         rec.set_face_normal(ray, outward_normal)
+        rec.material = self._material
         return rec
 
 
 if __name__ == "__main__":
-    s = Sphere(Point3(0, 0, 0), 1.5)
+    from Color import Color
+    from Material import Material
+
+
+    # 一个最小可实例化的具体材质，仅用于自测
+    class DummyMaterial(Material):
+        def scatter(self, r_in, rec):
+            return Color(0.5, 0.5, 0.5), Ray(rec.point, rec.normal)
+
+
+    mat = DummyMaterial()
+    s = Sphere(Point3(0, 0, 0), 1.5, mat)
     print(f"center: {s.center}")
     print(f"radius: {s.radius}")
     assert s.center == Point3(0, 0, 0)
     assert s.radius == 1.5
     print(f"__repr__: {s!r}")
-    assert eval(repr(s)) == s
+    assert "material=" in repr(s)
 
     # hit 光线-球体相交检测
     # 沿 +z 方向、从原点射向球心在 (0,0,0)、半径 1 的球
@@ -144,6 +159,8 @@ if __name__ == "__main__":
     assert rec_hit.front_face is True
     assert rec_hit.normal == Vec3(0, 0, -1)
     assert r_hit.direction.dot(rec_hit.normal) < 0
+    # hit record 应携带本球体的材质
+    assert rec_hit.material is mat
 
     # 完全错过球体（沿 +x 偏离）
     r_miss = Ray(Point3(5, 0, -5), Vec3(0, 0, 1))

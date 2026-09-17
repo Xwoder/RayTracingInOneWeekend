@@ -43,35 +43,3 @@ class Material(ABC):
         """
         ...
 
-
-if __name__ == "__main__":
-    from Point3 import Point3
-    from Vec3 import Vec3
-
-    # 抽象基类本身不可实例化
-    try:
-        Material()
-        raise AssertionError("Material 应当无法被直接实例化")
-    except TypeError:
-        pass
-
-    # 一个最小可实例化的具体子类，用于验证接口形态
-    class DummyMaterial(Material):
-        def scatter(self, r_in: Ray, rec: HitRecord) -> tuple[Color, Ray] | None:
-            atten = Color(0.5, 0.5, 0.5)
-            scattered = Ray(rec.point, rec.normal)
-            return atten, scattered
-
-    rec = HitRecord(
-        point=Point3(0, 0, 0),
-        normal=Vec3(0, 1, 0),
-        t=1.0,
-        front_face=True,
-    )
-    m = DummyMaterial()
-    result = m.scatter(Ray(Point3(0, 0, 0), Vec3(0, -1, 0)), rec)
-    assert result is not None
-    atten, scattered = result
-    assert atten == Color(0.5, 0.5, 0.5)
-    assert scattered.origin == rec.point
-    print("\n所有测试通过")

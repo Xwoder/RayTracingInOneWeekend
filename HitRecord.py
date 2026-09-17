@@ -1,9 +1,15 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from Number import Number
 from Point3 import Point3
 from Ray import Ray
-from Vec3 import  Vec3
+from Vec3 import Vec3
+
+if TYPE_CHECKING:
+    from Material import Material
 
 
 @dataclass
@@ -29,6 +35,7 @@ class HitRecord:
     normal: Vec3
     t: Number
     front_face: bool = False
+    material: Material | None = None
 
     def set_face_normal(self, ray: Ray, outward_normal: Vec3) -> None:
         """
