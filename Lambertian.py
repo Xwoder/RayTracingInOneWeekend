@@ -14,8 +14,8 @@ class Lambertian(Material):
     对应《Ray Tracing in One Weekend》中的 lambertian 类。命中后沿交点法线
     所在半球内的随机方向散射（余弦加权），衰减系数即表面反照率 albedo。
 
-    注意：本类仅提供材质数据结构与 scatter 接口雏形，当前相机
-    （Camera.ray_color）尚未使用 hit_record.material，因此尚未参与实际着色。
+    本类通过 scatter() 提供漫反射散射逻辑，已由 Camera.ray_color 在命中物体时
+    通过 hit_record.material.scatter(...) 调用，参与实际着色。
     """
 
     _albedo: Color

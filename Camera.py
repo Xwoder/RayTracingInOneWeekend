@@ -25,7 +25,7 @@ class Camera:
     - 私有状态：image_height、center、pixel00_loc、pixel_delta_u、
       pixel_delta_v，由 initialize() 根据公共参数计算。
     - ray_color(r, depth, world)：对单条光线着色（depth 用尽返回黑色；
-      命中物体后沿法线所在半球内的随机方向继续漫反射，否则返回天空渐变背景）。
+      命中物体时把散射委托给物体材质 rec.material.scatter，否则返回天空渐变背景）。
 
     对应 C++ 的：
         class camera {
@@ -183,8 +183,9 @@ class Camera:
         计算单条光线 ray 在场景 world 中的颜色（对应 C++ camera::ray_color）。
 
         先检查反弹深度 depth：若已用尽（depth <= 0），不再收集任何光，返回黑色。
-        命中物体时，沿交点处法线所在半球内的随机方向生成一条新光线并
-        递归着色（漫反射 / Lambertian，depth 减 1），结果乘以 0.5；
+        命中物体时，将散射委托给该物体材质 rec.material.scatter(...)：
+        若发生散射，则返回 衰减系数 * 递归着色(散射光线, depth-1)；
+        若材质吸收光线（无散射），返回黑色。
         未命中时，按光线方向的 y 分量插值出天空渐变背景色。
 
         Args:
@@ -200,12 +201,14 @@ class Camera:
             return Color(0, 0, 0)
 
         hit_record: HitRecord | None = world.hit(ray, Interval(0.001, math.inf))
-        if hit_record is not None:
-            # 命中：Lambertian 漫反射
-            # 在表面法线方向上叠加一个随机单位向量，得到法线所在半球内
-            # 的随机散射方向（即余弦加权采样，等价于在半球内均匀取方向）
-            direction: Vec3 = hit_record.normal + Vec3.random_unit_vector()
-            return 0.7 * self.ray_color(Ray(hit_record.point, direction), depth - 1, world)
+        if hit_record is not None and hit_record.material is not None:
+            # 命中：把散射完全交给材质（Lambertian / 金属 / ...）处理。
+            # scatter 命中时返回 (衰减系数, 散射光线)，被吸收时返回 None。
+            result = hit_record.material.scatter(ray, hit_record)
+            if result is not None:
+                attenuation, scattered = result
+                return attenuation * self.ray_color(scattered, depth - 1, world)
+            return Color(0, 0, 0)
 
         # 未命中：天空渐变背景
         unit_direction = ray.direction.unit_vector()
