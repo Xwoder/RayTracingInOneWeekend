@@ -37,13 +37,13 @@ class Lambertian(Material):
 
     @override
     def scatter(self,
-                r_in: Ray,
+                ray_in: Ray,
                 hit_record: HitRecord) -> tuple[Color, Ray] | None:
         """
         在命中处产生一条漫反射散射光线。
 
         Args:
-            r_in (Ray): 入射光线（此处未使用，保留以符合 Material 接口）。
+            ray_in (Ray): 入射光线（此处未使用，保留以符合 Material 接口）。
             hit_record (HitRecord): 命中记录（提供交点与法线）。
 
         Returns:

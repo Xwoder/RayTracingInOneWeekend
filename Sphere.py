@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     # 一个最小可实例化的具体材质，仅用于自测
     class DummyMaterial(Material):
-        def scatter(self, r_in, hit_record):
+        def scatter(self, ray_in, hit_record):
             return Color(0.5, 0.5, 0.5), Ray(hit_record.point, hit_record.normal)
 
 
