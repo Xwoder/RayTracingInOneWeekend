@@ -1,3 +1,5 @@
+from typing import override
+
 from Color import Color
 from HitRecord import HitRecord
 from Material import Material
@@ -33,6 +35,7 @@ class Lambertian(Material):
         """返回表面反照率。"""
         return self._albedo
 
+    @override
     def scatter(self,
                 r_in: Ray,
                 rec: HitRecord) -> tuple[Color, Ray] | None:
