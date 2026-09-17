@@ -22,6 +22,8 @@ class Interval:
 
     _min: Number
     _max: Number
+    empty: Interval
+    universe: Interval
 
     def __init__(self,
                  min_value: Number = math.inf,
