@@ -2,6 +2,7 @@ import math
 from typing import Sequence
 
 from Number import Number
+from Random import random_number
 
 
 class Vec3:
@@ -280,6 +281,31 @@ class Vec3:
     def one(cls) -> Vec3:
         return cls(1, 1, 1)
 
+    @classmethod
+    def random(cls,
+               min: Number = 0.0,
+               max: Number = 1.0) -> Vec3:
+        """
+        返回一个各分量均为独立随机实数的向量。
+
+        对应 C++ vec3 的两个静态重载：
+            static vec3 random();                        // 各分量取 [0,1)
+            static vec3 random(double min, double max);  // 各分量取 [min,max)
+        Python 里用默认参数合并为一个：不传参即 [0,1)，传入区间即 [min,max)。
+
+        Args:
+            min (Number): 分量下界（含），默认 0.0。
+            max (Number): 分量上界（不含），默认 1.0。
+
+        Returns:
+            Vec3: 三个分量各自独立随机的新向量。
+        """
+        return cls(
+            random_number(min, max),
+            random_number(min, max),
+            random_number(min, max),
+        )
+
 
 
 if __name__ == '__main__':
@@ -370,6 +396,24 @@ if __name__ == '__main__':
     u = Vec3(3, 0, 0).unit_vector()
     print(f"unit_vector: {u}")
     assert u == Vec3(1, 0, 0)
+
+    # random 随机向量：不传参时各分量落在 [0,1)
+    r1 = Vec3.random()
+    print(f"random(): {r1}")
+    assert 0.0 <= r1.x < 1.0
+    assert 0.0 <= r1.y < 1.0
+    assert 0.0 <= r1.z < 1.0
+
+    # random(min, max)：各分量落在 [min,max)
+    r2 = Vec3.random(-2.0, 3.0)
+    print(f"random(-2, 3): {r2}")
+    assert -2.0 <= r2.x < 3.0
+    assert -2.0 <= r2.y < 3.0
+    assert -2.0 <= r2.z < 3.0
+
+    # 重复采样应得到不同结果（确实是随机的）
+    samples = [Vec3.random() for _ in range(8)]
+    assert len({(s.x, s.y, s.z) for s in samples}) == 8
 
     # __repr__ 官方字符串表示
     print(f"__repr__: {v!r}")
