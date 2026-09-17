@@ -284,6 +284,24 @@ class Vec3:
             self._x * other.y - self._y * other.x,
         )
 
+    @staticmethod
+    def reflect(v: Vec3, n: Vec3) -> Vec3:
+        """
+        向量反射：计算 v 关于法线 n 的镜面反射方向。
+        对应 C++ 的 inline vec3 reflect(const vec3& v, const vec3& n) {
+            return v - 2*dot(v,n)*n;
+        }
+        n 必须是单位向量；结果长度与 v 相同，方向满足入射角等于反射角。
+
+        Args:
+            v (Vec3): 入射方向向量（通常指向表面）。
+            n (Vec3): 单位法线向量。
+
+        Returns:
+            Vec3: 反射方向向量 v - 2*dot(v,n)*n
+        """
+        return v - 2 * v.dot(n) * n
+
     @classmethod
     def zero(cls) -> Vec3:
         return cls(0, 0, 0)
@@ -529,6 +547,17 @@ if __name__ == '__main__':
                   if Vec3.random_unit_vector().dot(n) < 0.0)
     print(f"negative-side samples (of 400): {flipped}")
     assert 120 < flipped < 280
+
+    # reflect 镜面反射：v 关于单位法线 n 的反射
+    # 例：竖直入射 (0,-1,0) 碰到水平面法线 (0,1,0) 应反射为 (0,1,0)
+    r = Vec3.reflect(Vec3(0, -1, 0), Vec3(0, 1, 0))
+    print(f"reflect: {r}")
+    assert r == Vec3(0, 1, 0)
+    # 斜入射 (1,-1,0) 关于 (0,1,0) 反射应为 (1,1,0)
+    assert Vec3.reflect(Vec3(1, -1, 0), Vec3(0, 1, 0)) == Vec3(1, 1, 0)
+    # 反射方向长度应与入射方向相同
+    assert abs(Vec3.reflect(Vec3(2, -3, 5), Vec3(0, 1, 0)).length() -
+               Vec3(2, -3, 5).length()) < 1e-12
 
     # 任意方向的法线同样成立
     for _ in range(50):
