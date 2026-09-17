@@ -306,6 +306,37 @@ class Vec3:
             random_number(min, max),
         )
 
+    @classmethod
+    def random_unit_vector(cls) -> Vec3:
+        """
+        返回一个随机单位向量（方向均匀分布在单位球面上）。
+
+        对应 C++ vec3.h 中的 inline 函数：
+            inline vec3 random_unit_vector() {
+                while (true) {
+                    auto p = vec3::random(-1,1);
+                    auto lensq = p.length_squared();
+                    if (1e-160 < lensq && lensq <= 1)
+                        return p / sqrt(lensq);
+                }
+            }
+
+        做法是在 [-1,1]³ 立方体内随机取点，只接受落在单位球内（1e-160 <
+        |p|² <= 1）的点再归一化——即拒绝采样。下界 1e-160 用于排除长度过小
+        （尤其是零向量）导致的数值问题。立方体体积 8、球体积 4π/3，
+        接受率约 52%，循环期望执行约 2 次。
+
+        Returns:
+            Vec3: 长度为 1 的随机方向向量。
+        """
+        while True:
+            p: Vec3 = cls.random(-1, 1)
+            lensq: float = p.length_squared()
+            # 排除长度过小（含零向量）与球外（含退化）的点
+            if 1e-160 < lensq <= 1:
+                unit_vector: Vec3 = p / math.sqrt(lensq)
+                return unit_vector
+
 
 
 if __name__ == '__main__':
@@ -414,6 +445,23 @@ if __name__ == '__main__':
     # 重复采样应得到不同结果（确实是随机的）
     samples = [Vec3.random() for _ in range(8)]
     assert len({(s.x, s.y, s.z) for s in samples}) == 8
+
+    # random_unit_vector：长度应为 1，且各分量落在单位球内 [-1,1]
+    unit = Vec3.random_unit_vector()
+    print(f"random_unit_vector: {unit}")
+    assert abs(unit.length() - 1.0) < 1e-12
+    assert abs(unit.length_squared() - 1.0) < 1e-12
+    for _ in range(100):
+        v = Vec3.random_unit_vector()
+        assert -1.0 <= v.x <= 1.0
+        assert -1.0 <= v.y <= 1.0
+        assert -1.0 <= v.z <= 1.0
+        assert abs(v.length() - 1.0) < 1e-12
+
+    # 拒绝采样：绝不会返回零向量或超长向量，且结果确实随机
+    directions = [Vec3.random_unit_vector() for _ in range(50)]
+    assert all(v.length_squared() > 1e-160 for v in directions)
+    assert len({(v.x, v.y, v.z) for v in directions}) == 50
 
     # __repr__ 官方字符串表示
     print(f"__repr__: {v!r}")
