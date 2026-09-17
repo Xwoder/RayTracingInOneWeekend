@@ -2,6 +2,9 @@
 
 unset VIRTUAL_ENV
 
-uv run python main.py > image.PPM
+TIMESTAMP=$(date +"%Y_%m_%d_%H_%M_%S")
+OUTPUT="image_${TIMESTAMP}.PPM"
 
-open image.PPM
+uv run python main.py > "$OUTPUT"
+
+open "$OUTPUT"
