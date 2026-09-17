@@ -23,8 +23,8 @@ class Camera:
     - render(world, out)：按 PPM 格式输出图像。
     - 私有状态：image_height、center、pixel00_loc、pixel_delta_u、
       pixel_delta_v，由 initialize() 根据公共参数计算。
-    - ray_color(r, world)：对单条光线着色（命中物体用法线映射，
-      否则返回天空渐变背景）。
+    - ray_color(r, world)：对单条光线着色（命中物体后沿法线所在半球内的
+      随机方向继续漫反射，否则返回天空渐变背景）。
 
     对应 C++ 的：
         class camera {
@@ -175,8 +175,9 @@ class Camera:
         """
         计算单条光线 ray 在场景 world 中的颜色（对应 C++ camera::ray_color）。
 
-        命中物体时，以交点处的单位法线映射到 RGB：0.5 * (N + 1)；
-        未命中时，按光线方向的 y 分量插值出天空渐变背景色。
+        命中物体时，沿交点处法线所在半球内的随机方向生成一条新光线并
+        递归着色（漫反射 / Lambertian），结果乘以 0.5；未命中时，按光线
+        方向的 y 分量插值出天空渐变背景色。
 
         Args:
             ray (Ray): 待着色的光线，原点为相机位置，方向指向某像素。
@@ -187,8 +188,9 @@ class Camera:
         """
         hit_record: HitRecord | None = world.hit(ray, Interval(0.0, math.inf))
         if hit_record is not None:
-            # 命中：以交点处单位法线映射着色（0.5 * (N + 1)）
-            return (hit_record.normal + Color(1.0, 1.0, 1.0)) / 2
+            # 命中：以交点处法线所在半球内的随机方向继续反射（漫反射）
+            direction: Vec3 = Vec3.random_on_hemisphere(hit_record.normal)
+            return 0.5 * self.ray_color(Ray(hit_record.point, direction), world)
 
         # 未命中：天空渐变背景
         unit_direction = ray.direction.unit_vector()
