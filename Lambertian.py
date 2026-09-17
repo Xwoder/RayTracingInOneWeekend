@@ -47,6 +47,10 @@ class Lambertian(Material):
             tuple[Color, Ray] | None: 始终返回 (反照率, 散射光线)。
         """
         scatter_direction: Vec3 = rec.normal + Vec3.random_unit_vector()
+
+        if scatter_direction.near_zero():
+            scatter_direction = rec.normal
+
         scattered_ray: Ray = Ray(rec.point, scatter_direction)
         return self._albedo, scattered_ray
 
