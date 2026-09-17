@@ -98,13 +98,18 @@ class HittableList(Hittable):
 
 
 if __name__ == "__main__":
+    from Color import Color
+    from Lambertian import Lambertian
     from Point3 import Point3
     from Sphere import Sphere
     from Vec3 import Vec3
 
+    # 测试用材质（仅用于自测，不影响命中几何）
+    mat = Lambertian(Color(0.5, 0.5, 0.5))
+
     # 两个共线的球：近球在 z=-1 半径 0.5，远球在 z=-3 半径 0.5
-    near = Sphere(Point3(0, 0, -1), 0.5)
-    far = Sphere(Point3(0, 0, -3), 0.5)
+    near = Sphere(Point3(0, 0, -1), 0.5, mat)
+    far = Sphere(Point3(0, 0, -3), 0.5, mat)
 
     world = HittableList()
     assert len(world) == 0
