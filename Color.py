@@ -1,6 +1,8 @@
+import math
 from typing import TextIO
 
 from Interval import Interval
+from Number import Number
 from Vec3 import Vec3
 
 Color = Vec3
@@ -9,10 +11,22 @@ Color = Vec3
 intensity = Interval(0, 1)
 
 
+def linear_to_gamma(linear_component: Number) -> Number:
+    if linear_component > 0:
+        return math.sqrt(linear_component)
+    else:
+        return 0.0
+
+
 def write_color(out: TextIO, pixel_color: Color) -> None:
     r = pixel_color.x
     g = pixel_color.y
     b = pixel_color.z
+
+    # 对线性分量做伽马校正（gamma 2）
+    r = linear_to_gamma(r)
+    g = linear_to_gamma(g)
+    b = linear_to_gamma(b)
 
     # 将 [0,1] 分量映射到字节范围 [0,255]（含钳制）
     rbyte = int(255 * intensity.clamp(r))
@@ -24,6 +38,10 @@ def write_color(out: TextIO, pixel_color: Color) -> None:
 
 if __name__ == '__main__':
     import sys
+
+    assert linear_to_gamma(0.25) == 0.5
+    assert linear_to_gamma(0.0) == 0.0
+    assert linear_to_gamma(-1.0) == 0.0
 
     color = Color(1.0, 0.5, 0.25)
     write_color(sys.stdout, color)
