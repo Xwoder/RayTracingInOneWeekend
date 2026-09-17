@@ -209,6 +209,17 @@ class Vec3:
         """
         return self._x ** 2 + self._y ** 2 + self._z ** 2
 
+    def near_zero(self) -> bool:
+        """
+        判断向量是否在各个分量上都接近零（用于剔除散射方向上的退化/噪声向量）。
+        对应 C++ 的 near_zero()。
+
+        Returns:
+            bool: 当 x、y、z 三个分量的绝对值都小于 1e-8 时返回 True
+        """
+        s: Number = 1e-8
+        return abs(self._x) < s and abs(self._y) < s and abs(self._z) < s
+
     def length(self) -> float:
         """
         计算向量的欧几里得长度（模），即 sqrt(length_squared())。
@@ -439,6 +450,12 @@ if __name__ == '__main__':
     # length_squared 长度平方
     print(f"length_squared: {v.length_squared()}")
     assert v.length_squared() == 14
+
+    # near_zero 是否接近零向量
+    print(f"near_zero: {Vec3(0, 0, 0).near_zero()} {Vec3(1e-9, 1e-9, 1e-9).near_zero()} {Vec3(1e-7, 0, 0).near_zero()}")
+    assert Vec3(0, 0, 0).near_zero()
+    assert Vec3(1e-9, 1e-9, 1e-9).near_zero()
+    assert not Vec3(1e-7, 0, 0).near_zero()
 
     # length 欧几里得长度
     print(f"length: {v.length()}")
