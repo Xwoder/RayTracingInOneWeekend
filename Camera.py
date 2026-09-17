@@ -205,7 +205,7 @@ class Camera:
             # 在表面法线方向上叠加一个随机单位向量，得到法线所在半球内
             # 的随机散射方向（即余弦加权采样，等价于在半球内均匀取方向）
             direction: Vec3 = hit_record.normal + Vec3.random_unit_vector()
-            return 0.5 * self.ray_color(Ray(hit_record.point, direction), depth - 1, world)
+            return 0.7 * self.ray_color(Ray(hit_record.point, direction), depth - 1, world)
 
         # 未命中：天空渐变背景
         unit_direction = ray.direction.unit_vector()
