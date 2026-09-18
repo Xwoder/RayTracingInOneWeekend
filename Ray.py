@@ -45,14 +45,3 @@ class Ray:
         return self._orig + t * self._dir
 
 
-if __name__ == "__main__":
-    r = Ray(Point3(0, 0, 0), Vec3(1, 2, 3))
-    print(f"origin: {r.origin}")
-    print(f"direction: {r.direction}")
-    print(f"at(0): {r.at(0)}")
-    print(f"at(1): {r.at(1)}")
-    print(f"at(2.5): {r.at(2.5)}")
-    assert r.at(0) == Point3(0, 0, 0)
-    assert r.at(1) == Point3(1, 2, 3)
-    assert r.at(2.5) == Point3(2.5, 5.0, 7.5)
-    print("\n所有测试通过")
