@@ -20,7 +20,8 @@ class Camera:
     封装渲染一帧所需的所有参数与逻辑：
 
     - 公共参数：aspect_ratio（宽高比）、image_width（像素宽度）、
-      samples_per_pixel（每像素采样数）、max_depth（光线最大反弹次数）。
+      samples_per_pixel（每像素采样数）、max_depth（光线最大反弹次数）、
+      vfov（垂直视角，单位度）。
     - render(world, out)：按 PPM 格式输出图像。
     - 私有状态：image_height、center、pixel00_loc、pixel_delta_u、
       pixel_delta_v，由 initialize() 根据公共参数计算。
@@ -34,6 +35,7 @@ class Camera:
             int    image_width       = 100;
             int    samples_per_pixel = 10;
             int    max_depth         = 10;
+            double vfov              = 90;  // 垂直视角（field of view）
             void render(const hittable& world);
           private:
             void initialize();
@@ -45,12 +47,14 @@ class Camera:
     _image_height: int = 0
     _samples_per_pixel: int = 10
     _max_depth: int = 10
+    _vfov: Number = 90
 
     def __init__(self,
                  aspect_ratio: Number = 1,
                  image_width: int = 400,
                  samples_per_pixel: int = 10,
-                 max_depth: int = 10):
+                 max_depth: int = 10,
+                 vfov: Number = 90):
         """
         构造一台相机。
 
@@ -59,11 +63,13 @@ class Camera:
             image_width (int): 渲染图像的像素宽度，默认 100。
             samples_per_pixel (int): 每个像素的采样次数，默认 10。
             max_depth (int): 光线进入场景后最大的反弹（bounce）次数，默认 10。
+            vfov (float): 垂直视角（field of view），单位度，默认 90。
         """
         self._aspect_ratio = aspect_ratio
         self._image_width = image_width
         self._samples_per_pixel = samples_per_pixel
         self._max_depth = max_depth
+        self._vfov = vfov
 
     def render(self,
                world: Hittable,
@@ -114,9 +120,14 @@ class Camera:
         # 相机位于原点
         self.center = Point3(0, 0, 0)
 
-        # 视口尺寸。视口高度固定为 2.0，焦距为 1.0。
+        # 视口尺寸。焦距固定为 1.0，视口高度由垂直视角 vfov 决定：
+        #   theta = radians(vfov), h = tan(theta/2)
+        #   viewport_height = 2 * h * focal_length
+        # vfov=90 时 h=1，退化为原来的固定高度 2.0。
         focal_length = 1.0
-        viewport_height = 2.0
+        theta = math.radians(self._vfov)
+        h = math.tan(theta / 2)
+        viewport_height = 2 * h * focal_length
         viewport_width = viewport_height * (self._image_width / self._image_height)
 
         # 视口水平与垂直方向（向右为 +u，向下为 +v）的边向量
@@ -225,4 +236,6 @@ class Camera:
     def image_height(self):
         return self._image_height
 
-
+    @property
+    def vfov(self):
+        return self._vfov
