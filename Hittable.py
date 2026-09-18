@@ -1,10 +1,8 @@
 import math
-
 from abc import ABC, abstractmethod
 
 from HitRecord import HitRecord
 from Interval import Interval
-from Number import Number
 from Ray import Ray
 
 
@@ -18,9 +16,9 @@ class Hittable(ABC):
 
     @abstractmethod
     def hit(
-        self,
-        ray: Ray,
-        ray_t: Interval = Interval(0.0, math.inf),
+            self,
+            ray: Ray,
+            ray_t: Interval = Interval(0.0, math.inf),
     ) -> HitRecord | None:
         """
         判断光线 ray 是否击中本物体，并可限制命中参数 t 的搜索区间。
