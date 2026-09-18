@@ -3,6 +3,7 @@
 from Camera import Camera
 from Color import Color
 from HittableList import HittableList
+from material.Dielectric import Dielectric
 from material.Lambertian import Lambertian
 from material.Metal import Metal
 from Point3 import Point3
@@ -16,8 +17,8 @@ def main() -> None:
     material_ground = Lambertian(Color(0.8, 0.8, 0.0))
     # 中间小球：朗伯材质
     material_center = Lambertian(Color(0.1, 0.2, 0.5))
-    # 左侧小球：金属材质（磨砂 0.3）
-    material_left = Metal(Color(0.8, 0.8, 0.8), 0.3)
+    # 左侧小球：电介质（玻璃）材质，折射率 1.50
+    material_left = Dielectric(1.50)
     # 右侧小球：金属材质（磨砂 1.0，被钳制为最大毛糙）
     material_right = Metal(Color(0.8, 0.6, 0.2), 1.0)
 
