@@ -221,6 +221,10 @@ class Camera:
     def image_width(self):
         return self._image_width
 
+    @property
+    def image_height(self):
+        return self._image_height
+
 
 if __name__ == "__main__":
     import io
@@ -232,8 +236,8 @@ if __name__ == "__main__":
     # 构造并初始化：宽高比 16/9、宽 400 -> 高应为 225
     cam = Camera(aspect_ratio=16 / 9, image_width=400)
     cam.initialize()
-    print(f"image_height: {cam._image_height}")
-    assert cam._image_height == 225
+    print(f"image_height: {cam.image_height}")
+    assert cam.image_height == 225
     assert cam.center == Point3(0, 0, 0)
 
     # 视口宽度应与宽高比匹配：viewport_height=2.0, width=2.0 * 400/225
