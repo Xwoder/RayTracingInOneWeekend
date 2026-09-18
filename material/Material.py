@@ -34,7 +34,7 @@ class Material(ABC):
 
         Args:
             ray_in (Ray): 入射光线。
-            rec (HitRecord): 命中记录（交点、法线、t、front_face 等）。
+            hit_record (HitRecord): 命中记录（交点、法线、t、front_face 等）。
 
         Returns:
             tuple[Color, Ray] | None:
