@@ -302,6 +302,36 @@ class Vec3:
         """
         return v - 2 * v.dot(n) * n
 
+    @staticmethod
+    def refract(uv: Vec3, n: Vec3, etai_over_etat: float) -> Vec3:
+        """
+        向量折射：计算方向 uv 穿过法线 n 分界面时的折射方向。
+        对应 C++ 的 inline vec3 refract(const vec3& uv, const vec3& n,
+        double etai_over_etat)。
+
+            auto cos_theta = std::fmin(dot(-uv, n), 1.0);
+            vec3 r_out_perp =  etai_over_etat * (uv + cos_theta*n);
+            vec3 r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.length_squared())) * n;
+            return r_out_perp + r_out_parallel;
+
+        uv 与 n 均应为单位向量。etai_over_etat 为相对折射率（入射介质折射率
+        / 折射介质折射率）。r_out_perp 为折射方向垂直于法线的分量，
+        r_out_parallel 为平行于法线的分量（取负号使光线弯向法线一侧）。
+        cos_theta 用 std::fmin 钳制到 [.., 1.0] 以避免数值误差导致的越界。
+
+        Args:
+            uv (Vec3): 入射单位方向向量（指向表面）。
+            n (Vec3): 单位法线向量。
+            etai_over_etat (float): 相对折射率 etai/etat。
+
+        Returns:
+            Vec3: 折射后的单位方向向量（按公式直接相加，未强制归一化）。
+        """
+        cos_theta = min(-uv.dot(n), 1.0)
+        r_out_perp = etai_over_etat * (uv + cos_theta * n)
+        r_out_parallel = -math.sqrt(abs(1.0 - r_out_perp.length_squared())) * n
+        return r_out_perp + r_out_parallel
+
     @classmethod
     def zero(cls) -> Vec3:
         return cls(0, 0, 0)
@@ -569,5 +599,19 @@ if __name__ == '__main__':
     # __repr__ 官方字符串表示
     print(f"__repr__: {v!r}")
     assert eval(repr(v)) == v
+
+    # refract 折射：空气(η=1.0)进入玻璃(η=1.5)，相对折射率 1/1.5
+    # 竖直入射 (0,-1,0) 经水平面法线 (0,1,0) 折射后仍应竖直向下 (0,-1,0)
+    r = Vec3.refract(Vec3(0, -1, 0), Vec3(0, 1, 0), 1.0 / 1.5)
+    print(f"refract: {r}")
+    assert (r - Vec3(0, -1, 0)).length() < 1e-12
+    # 折射方向应为单位向量
+    assert abs(r.length() - 1.0) < 1e-12
+    # 斜入射：检查折射方向长度仍为 1，且弯向法线一侧
+    for _ in range(50):
+        n = Vec3.random_unit_vector()
+        d = Vec3.random_on_hemisphere(-n)  # 入射指向表面
+        refr = Vec3.refract(d, n, 1.0 / 1.5)
+        assert abs(refr.length() - 1.0) < 1e-12
 
     print("\n所有测试通过")
