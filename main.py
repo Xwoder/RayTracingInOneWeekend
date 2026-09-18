@@ -1,13 +1,15 @@
 #!/usr/bin/python
 
+import math
+
 from Camera import Camera
 from Color import Color
 from HittableList import HittableList
+from Point3 import Point3
+from Sphere import Sphere
 from material.Dielectric import Dielectric
 from material.Lambertian import Lambertian
 from material.Metal import Metal
-from Point3 import Point3
-from Sphere import Sphere
 
 
 def main_world_1() -> None:
@@ -40,5 +42,26 @@ def main_world_1() -> None:
     camera.render(world)
 
 
+def main_world_2() -> None:
+    # 场景：两个 Lambertian 小球（左蓝、右红）
+    world: HittableList = HittableList()
+
+    R = math.cos(math.pi / 4)
+
+    material_left = Lambertian(Color(0, 0, 1))
+    material_right = Lambertian(Color(1, 0, 0))
+
+    world.add(Sphere(Point3(-R, 0, -1), R, material_left))
+    world.add(Sphere(Point3(R, 0, -1), R, material_right))
+
+    # Camera
+    camera = Camera(aspect_ratio=16.0 / 9.0,
+                    image_width=800,
+                    samples_per_pixel=100,
+                    max_depth=50,
+                    vfov=90)
+    camera.render(world)
+
+
 if __name__ == "__main__":
-    main_world_1()
+    main_world_2()
