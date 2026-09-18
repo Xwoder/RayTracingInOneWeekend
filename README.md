@@ -109,8 +109,12 @@ On success it prints "所有测试通过" (all tests passed).
    down -Z.
 2. For each pixel `(i, j)`, it shoots `samples_per_pixel` randomly jittered rays
    (`get_ray` + `sample_square`) for antialiasing.
-3. `ray_color` tests the scene along the ray: on hit it returns the normal shading
-   `0.5 * (N + 1)`; on miss it returns the sky-gradient background.
+3. `ray_color` tests the scene along the ray. If the recursion depth (`max_depth`)
+   is exhausted it returns black. On hit, shading is delegated to the surface
+   material: `rec.material.scatter()` returns `(attenuation, scattered_ray)`, and the
+   final color is `attenuation * ray_color(scattered_ray, depth - 1)`; if the material
+   absorbs the ray (returns `None`) the result is black. On miss it returns the
+   sky-gradient background.
 4. After averaging the multiple samples, it writes the result in PPM (P3) format via
    `write_color`.
 
