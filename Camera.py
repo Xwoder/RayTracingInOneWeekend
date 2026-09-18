@@ -41,7 +41,8 @@ class Camera:
         };
     """
     _aspect_ratio: Number
-    _image_width: int
+    _image_width: int = 0
+    _image_height: int = 0
     _samples_per_pixel: int = 10
     _max_depth: int = 10
 
@@ -79,10 +80,10 @@ class Camera:
         """
         self.initialize()
 
-        out.write(f"P3\n{self._image_width} {self.image_height}\n255\n")
+        out.write(f"P3\n{self._image_width} {self._image_height}\n255\n")
 
-        for j in range(self.image_height):
-            sys.stderr.write(f"\rScanlines remaining: {self.image_height - j} ")
+        for j in range(self._image_height):
+            sys.stderr.write(f"\rScanlines remaining: {self._image_height - j} ")
             sys.stderr.flush()
             for i in range(self._image_width):
                 pixel_color = Color(0, 0, 0)
@@ -107,8 +108,8 @@ class Camera:
         pixel_delta_u、pixel_delta_v。
         """
         # 计算图像高度，并保证至少为 1 像素
-        self.image_height = int(self._image_width / self._aspect_ratio)
-        self.image_height = 1 if self.image_height < 1 else self.image_height
+        self._image_height = int(self._image_width / self._aspect_ratio)
+        self._image_height = 1 if self._image_height < 1 else self._image_height
 
         # 相机位于原点
         self.center = Point3(0, 0, 0)
@@ -116,7 +117,7 @@ class Camera:
         # 视口尺寸。视口高度固定为 2.0，焦距为 1.0。
         focal_length = 1.0
         viewport_height = 2.0
-        viewport_width = viewport_height * (self._image_width / self.image_height)
+        viewport_width = viewport_height * (self._image_width / self._image_height)
 
         # 视口水平与垂直方向（向右为 +u，向下为 +v）的边向量
         viewport_u = Vec3(viewport_width, 0, 0)
@@ -124,7 +125,7 @@ class Camera:
 
         # 像素到像素的增量向量
         self.pixel_delta_u = viewport_u / self._image_width
-        self.pixel_delta_v = viewport_v / self.image_height
+        self.pixel_delta_v = viewport_v / self._image_height
 
         # 视口左上角及像素 (0,0) 的中心位置
         viewport_upper_left = (
@@ -216,6 +217,10 @@ class Camera:
         color: Color = (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0)
         return color
 
+    @property
+    def image_width(self):
+        return self._image_width
+
 
 if __name__ == "__main__":
     import io
@@ -227,14 +232,14 @@ if __name__ == "__main__":
     # 构造并初始化：宽高比 16/9、宽 400 -> 高应为 225
     cam = Camera(aspect_ratio=16 / 9, image_width=400)
     cam.initialize()
-    print(f"image_height: {cam.image_height}")
-    assert cam.image_height == 225
+    print(f"image_height: {cam._image_height}")
+    assert cam._image_height == 225
     assert cam.center == Point3(0, 0, 0)
 
     # 视口宽度应与宽高比匹配：viewport_height=2.0, width=2.0 * 400/225
     expected_viewport_width = 2.0 * (400 / 225)
     # 由像素增量反推 viewport 宽度
-    derived = cam.pixel_delta_u.x * cam._image_width
+    derived = cam.pixel_delta_u.x * cam.image_width
     print(f"viewport_width derived: {derived}")
     assert abs(derived - expected_viewport_width) < 1e-9
 
