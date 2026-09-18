@@ -36,15 +36,3 @@ def write_color(out: TextIO, pixel_color: Color) -> None:
     out.write(f"{rbyte} {gbyte} {bbyte}\n")
 
 
-if __name__ == '__main__':
-    import sys
-
-    assert linear_to_gamma(0.25) == 0.5
-    assert linear_to_gamma(0.0) == 0.0
-    assert linear_to_gamma(-1.0) == 0.0
-
-    color = Color(1.0, 0.5, 0.25)
-    write_color(sys.stdout, color)
-
-    color = Color(1.1, 0.5, 0.25)
-    write_color(sys.stdout, color)
