@@ -7,3 +7,7 @@ dependencies = [
     "numpy>=2.5.3",
     "pillow>=12.3.0",
 ]
+
+[tool.mypy]
+# 本项目依赖装在项目 venv（.venv）中，让 mypy 用同一解释器解析依赖（含 numpy 的 py.typed）。
+python_executable = ".venv/bin/python"
