@@ -3,8 +3,8 @@
 from Camera import Camera
 from Color import Color
 from HittableList import HittableList
-from Lambertian import Lambertian
-from Metal import Metal
+from material.Lambertian import Lambertian
+from material.Metal import Metal
 from Point3 import Point3
 from Sphere import Sphere
 

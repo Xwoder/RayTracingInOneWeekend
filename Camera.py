@@ -221,7 +221,7 @@ if __name__ == "__main__":
     import io
 
     from HittableList import HittableList
-    from Lambertian import Lambertian
+    from material.Lambertian import Lambertian
     from Sphere import Sphere
 
     # 构造并初始化：宽高比 16/9、宽 400 -> 高应为 225

@@ -99,7 +99,7 @@ class HittableList(Hittable):
 
 if __name__ == "__main__":
     from Color import Color
-    from Lambertian import Lambertian
+    from material.Lambertian import Lambertian
     from Point3 import Point3
     from Sphere import Sphere
     from Vec3 import Vec3

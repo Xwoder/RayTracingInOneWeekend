@@ -129,7 +129,7 @@ class Sphere(Hittable):
 
 if __name__ == "__main__":
     from Color import Color
-    from Material import Material
+    from material.Material import Material
 
 
     # 一个最小可实例化的具体材质，仅用于自测

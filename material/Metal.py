@@ -2,7 +2,7 @@ from typing import override
 
 from Color import Color
 from HitRecord import HitRecord
-from Material import Material
+from material.Material import Material
 from Number import Number
 from Ray import Ray
 from Vec3 import Vec3

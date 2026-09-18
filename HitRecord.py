@@ -9,7 +9,7 @@ from Ray import Ray
 from Vec3 import Vec3
 
 if TYPE_CHECKING:
-    from Material import Material
+    from material.Material import Material
 
 
 @dataclass
