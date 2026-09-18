@@ -10,7 +10,7 @@ from Point3 import Point3
 from Sphere import Sphere
 
 
-def main() -> None:
+def main_world_1() -> None:
     # 场景
     world: HittableList = HittableList()
     # 大地平面：球心 (0,-100.5,-1)，半径 100（模拟地面）
@@ -41,4 +41,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_world_1()
