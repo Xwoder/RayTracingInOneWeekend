@@ -3,19 +3,31 @@
 A ray tracing renderer written in Python, built step by step following the classic
 [*Ray Tracing in One Weekend*](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 tutorial. The current stage supports: camera viewport and pixel grid, ray-sphere
-intersection, normal-shaded visualization, sky-gradient background, and antialiasing
-with multiple samples.
+intersection, a material system (Lambertian / Metal / Dielectric), physically based
+shading with recursive light bounces (`max_depth`), sky-gradient background, and
+antialiasing with multiple samples.
 
 ## Features
 
 - **Vector and geometry math**: `Vec3` provides addition / subtraction / scalar
   multiplication / dot product / cross product / unit vector operations.
 - **Camera model**: `Camera` encapsulates the viewport, pixel deltas and rendering
-  logic, following the `camera` chapter of the book.
+  logic, following the `camera` chapter of the book. It supports per-ray shading,
+  multi-bounce recursion (`max_depth`) and antialiased sampling.
 - **Sphere intersection**: `Sphere.hit()` solves the ray-sphere equation with the
   discriminant method and returns the nearest hit.
-- **Normal visualization**: on hit, shades with the unit normal mapped as
-  `0.5 * (N + 1)` so the geometry is directly visible.
+- **Material system**: `material.Material` is an abstract base class whose `scatter`
+  returns `(attenuation, scattered_ray)` on a bounce or `None` when the ray is
+  absorbed. Three concrete materials are provided:
+  - **Lambertian** (`material.Lambertian`): ideal diffuse reflection. Scatters into
+    the hemisphere around the surface normal with cosine weighting; attenuation is
+    the surface `albedo`.
+  - **Metal** (`material.Metal`): specular reflection with adjustable `fuzz` (clamped
+    to `[0,1]`) for frosted/blurry mirrors. Returns `None` when the perturbed
+    reflection points into the surface (ray absorbed).
+  - **Dielectric** (`material.Dielectric`): transparent refraction (e.g. glass) with
+    total internal reflection and Schlick-approximation Fresnel reflection;
+    attenuation is pure white.
 - **Sky-gradient background**: on miss, interpolates a blue-white gradient by the
   ray direction's y component.
 - **Antialiasing**: each pixel is randomly jittered and sampled multiple times
@@ -25,12 +37,12 @@ with multiple samples.
 
 ```
 .
-├── main.py            # Entry point: build scene (small sphere + ground) and call camera.render()
-├── Camera.py          # Camera: rendering, viewport math, per-ray shading, antialiased sampling
+├── main.py            # Entry point: build scene (ground + Lambertian/Metal/Dielectric spheres) and call camera.render()
+├── Camera.py          # Camera: rendering, viewport math, per-ray shading, antialiased sampling, multi-bounce
 ├── Sphere.py          # Sphere: implements Hittable, ray-sphere intersection
 ├── Hittable.py        # Abstract base class (ABC) for hittable objects
 ├── HittableList.py    # Scene container: aggregates objects, returns the nearest hit
-├── HitRecord.py       # Hit record: point / normal / t / front_face
+├── HitRecord.py       # Hit record: point / normal / t / front_face / material
 ├── Ray.py             # Ray: origin + direction
 ├── Vec3.py            # 3D vector (mutable components, read-only x/y/z properties)
 ├── Point3.py          # 3D point (frozen dataclass)
@@ -38,14 +50,20 @@ with multiple samples.
 ├── Interval.py        # Interval: clamps the valid t range of a ray
 ├── Number.py          # Numeric type alias (float | int)
 ├── Random.py          # Random number utilities
-├── draw_image.sh      # Convenience script: run main.py and open image.PPM
-└── image.PPM          # Rendered output
+├── material/          # Material subsystem (shading logic)
+│   ├── Material.py    #   Abstract base: scatter() -> (attenuation, scattered) | None
+│   ├── Lambertian.py  #   Ideal diffuse (albedo)
+│   ├── Metal.py       #   Specular reflection with fuzz
+│   ├── Dielectric.py  #   Refraction + Fresnel (Schlick) reflection
+│   └── __init__.py
+├── draw_image.sh      # Convenience script: run main.py and open the timestamped image.PPM
+└── image_*.PPM        # Rendered output(s)
 ```
 
 ## Requirements
 
 - Python `>= 3.14`
-- Dependencies: `matplotlib`, `pillow` (managed via `uv`, see `pyproject.toml`)
+- Dependencies: `matplotlib`, `numpy`, `pillow` (managed via `uv`, see `pyproject.toml`)
 
 ## Running
 
@@ -55,7 +73,8 @@ Use the bundled script (requires [uv](https://docs.astral.sh/uv/) installed):
 ./draw_image.sh
 ```
 
-This runs `main.py`, writes the PPM image to `image.PPM` and opens it for preview.
+This runs `main.py`, writes the PPM image to a timestamped file `image_<YYYY_MM_DD_HH_MM_SS>.PPM`
+and opens it for preview.
 
 You can also run it manually:
 
@@ -75,6 +94,9 @@ bottom. Run the file directly to verify it:
 uv run python Vec3.py
 uv run python Sphere.py
 uv run python Camera.py
+uv run python material/Lambertian.py
+uv run python material/Metal.py
+uv run python material/Dielectric.py
 # ... and so on
 ```
 
