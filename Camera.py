@@ -40,7 +40,7 @@ class Camera:
             color ray_color(const ray& r, int depth, const hittable& world) const;
         };
     """
-    _aspect_ratio: Number
+    _aspect_ratio: Number = 1
     _image_width: int = 0
     _image_height: int = 0
     _samples_per_pixel: int = 10
