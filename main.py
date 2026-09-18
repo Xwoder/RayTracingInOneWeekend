@@ -19,12 +19,15 @@ def main() -> None:
     material_center = Lambertian(Color(0.1, 0.2, 0.5))
     # 左侧小球：电介质（玻璃）材质，折射率 1.50
     material_left = Dielectric(1.50)
-    # 右侧小球：金属材质（磨砂 1.0，被钳制为最大毛糙）
-    material_right = Metal(Color(0.8, 0.6, 0.2), 1.0)
+    # 左侧小球内部的「气泡」：相对折射率 1.00 / 1.50 的电介质空腔
+    material_bubble = Dielectric(1.00 / 1.50)
+    # 右侧小球：金属材质（fuzz 0.0，完美镜面）
+    material_right = Metal(Color(0.8, 0.6, 0.2), 0.0)
 
     world.add(Sphere(Point3(0.0, -100.5, -1.0), 100.0, material_ground))
     world.add(Sphere(Point3(0.0, 0.0, -1.2), 0.5, material_center))
     world.add(Sphere(Point3(-1.0, 0.0, -1.0), 0.5, material_left))
+    world.add(Sphere(Point3(-1.0, 0.0, -1.0), 0.4, material_bubble))
     world.add(Sphere(Point3(1.0, 0.0, -1.0), 0.5, material_right))
 
     # Image
