@@ -303,7 +303,7 @@ class Vec3:
         return v - 2 * v.dot(n) * n
 
     @staticmethod
-    def refract(uv: Vec3, n: Vec3, etai_over_etat: float) -> Vec3:
+    def refract(uv: Vec3, n: Vec3, etai_over_etat: Number) -> Vec3:
         """
         向量折射：计算方向 uv 穿过法线 n 分界面时的折射方向。
         对应 C++ 的 inline vec3 refract(const vec3& uv, const vec3& n,
@@ -322,7 +322,7 @@ class Vec3:
         Args:
             uv (Vec3): 入射单位方向向量（指向表面）。
             n (Vec3): 单位法线向量。
-            etai_over_etat (float): 相对折射率 etai/etat。
+            etai_over_etat (Number): 相对折射率 etai/etat。
 
         Returns:
             Vec3: 折射后的单位方向向量（按公式直接相加，未强制归一化）。
