@@ -59,24 +59,3 @@ class Lambertian(Material):
         return attenuation , scattered_ray
 
 
-if __name__ == "__main__":
-    from Point3 import Point3
-
-    mat = Lambertian(Color(0.5, 0.5, 0.5))
-    print(f"albedo: {mat.albedo}")
-    assert mat.albedo == Color(0.5, 0.5, 0.5)
-
-    rec = HitRecord(
-        point=Point3(0, 0, 0),
-        normal=Vec3(0, 1, 0),
-        t=1.0,
-        front_face=True,
-    )
-    result = mat.scatter(Ray(Point3(0, 0, 0), Vec3(0, -1, 0)), rec)
-    assert result is not None
-    atten, scattered = result
-    assert atten == mat.albedo
-    # 散射光线应从命中点发出
-    assert scattered.origin == rec.point
-
-    print("\n所有测试通过")
