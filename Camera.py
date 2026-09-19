@@ -21,10 +21,11 @@ class Camera:
 
     - 公共参数：aspect_ratio（宽高比）、image_width（像素宽度）、
       samples_per_pixel（每像素采样数）、max_depth（光线最大反弹次数）、
-      vfov（垂直视角，单位度）。
+      vfov（垂直视角，单位度）、lookfrom（相机位置）、lookat（注视点）、
+      vup（相机相对「上」方向）。
     - render(world, out)：按 PPM 格式输出图像。
-    - 私有状态：image_height、center、pixel00_loc、pixel_delta_u、
-      pixel_delta_v，由 initialize() 根据公共参数计算。
+    - 私有状态：image_height、pixel_samples_scale、center、pixel00_loc、
+      pixel_delta_u、pixel_delta_v、u、v、w，由 initialize() 根据公共参数计算。
     - ray_color(r, depth, world)：对单条光线着色（depth 用尽返回黑色；
       命中物体时把散射委托给物体材质 rec.material.scatter，否则返回天空渐变背景）。
 
@@ -48,13 +49,28 @@ class Camera:
     _samples_per_pixel: int = 10
     _max_depth: int = 10
     _vfov: Number = 90
+    _lookfrom: Point3 = Point3(0, 0, 0)
+    _lookat: Point3 = Point3(0, 0, -1)
+    _vup: Vec3 = Vec3(0, 1, 0)
+
+    _pixel_samples_scale: Number = 1
+    _center: Point3 = Point3(0, 0, 0)
+    _pixel00_loc: Point3 = Point3(0, 0, 0)
+    _pixel_delta_u: Vec3 = Vec3(0, 0, 0)
+    _pixel_delta_v: Vec3 = Vec3(0, 0, 0)
+    _u: Vec3 = Vec3(0, 0, 0)
+    _v: Vec3 = Vec3(0, 0, 0)
+    _w: Vec3 = Vec3(0, 0, 0)
 
     def __init__(self,
                  aspect_ratio: Number = 1,
                  image_width: int = 400,
                  samples_per_pixel: int = 10,
                  max_depth: int = 10,
-                 vfov: Number = 90):
+                 vfov: Number = 90,
+                 lookfrom: Point3 | None = None,
+                 lookat: Point3 | None = None,
+                 vup: Vec3 | None = None):
         """
         构造一台相机。
 
@@ -64,12 +80,18 @@ class Camera:
             samples_per_pixel (int): 每个像素的采样次数，默认 10。
             max_depth (int): 光线进入场景后最大的反弹（bounce）次数，默认 10。
             vfov (float): 垂直视角（field of view），单位度，默认 90。
+            lookfrom (Point3): 相机所在位置（看向哪里），默认 (0,0,0)。
+            lookat (Point3): 相机注视的目标点，默认 (0,0,-1)。
+            vup (Vec3): 相机相对的「上」方向，默认 (0,1,0)。
         """
         self._aspect_ratio = aspect_ratio
         self._image_width = image_width
         self._samples_per_pixel = samples_per_pixel
         self._max_depth = max_depth
         self._vfov = vfov
+        self._lookfrom = lookfrom if lookfrom is not None else Point3(0, 0, 0)
+        self._lookat = lookat if lookat is not None else Point3(0, 0, -1)
+        self._vup = vup if vup is not None else Vec3(0, 1, 0)
 
     def render(self,
                world: Hittable,
@@ -98,7 +120,7 @@ class Camera:
                     color: Color = self.ray_color(ray, self._max_depth, world)
                     pixel_color += color
 
-                pixel_color /= self._samples_per_pixel
+                pixel_color *= self._pixel_samples_scale
 
                 write_color(out, pixel_color)
 
@@ -107,46 +129,56 @@ class Camera:
 
     def initialize(self) -> None:
         """
-        根据公共参数计算图像高度与视口/像素网格（对应 C++ camera::initialize）。
+        根据公共参数计算图像高度、相机坐标系与视口/像素网格
+        （对应 C++ camera::initialize）。
 
-        视口高度固定为 2.0，焦距固定为 1.0，相机位于原点、朝 -Z 看。
-        结果写入私有状态：image_height、center、pixel00_loc、
-        pixel_delta_u、pixel_delta_v。
+        焦距由观景点距离决定：focal_length = |lookfrom - lookat|。
+        以 lookfrom/lookat/vup 为基准求出相机坐标架 u、v、w，
+        再据此摆放视口与像素网格。结果写入私有状态：image_height、
+        pixel_samples_scale、center、pixel00_loc、pixel_delta_u、
+        pixel_delta_v、u、v、w。
         """
         # 计算图像高度，并保证至少为 1 像素
         self._image_height = int(self._image_width / self._aspect_ratio)
         self._image_height = 1 if self._image_height < 1 else self._image_height
 
-        # 相机位于原点
-        self.center = Point3(0, 0, 0)
+        self._pixel_samples_scale = 1.0 / self._samples_per_pixel
 
-        # 视口尺寸。焦距固定为 1.0，视口高度由垂直视角 vfov 决定：
+        self._center = self._lookfrom
+
+        # 视口尺寸。焦距取相机到注视点的距离，视口高度由垂直视角 vfov 决定：
+        #   focal_length = |lookfrom - lookat|
         #   theta = radians(vfov), h = tan(theta/2)
         #   viewport_height = 2 * h * focal_length
-        # vfov=90 时 h=1，退化为原来的固定高度 2.0。
-        focal_length = 1.0
+        # vfov=90 且相机位于原点朝 -Z 看时，退化为原来的固定高度 2.0。
+        focal_length = (self._lookfrom - self._lookat).length()
         theta = math.radians(self._vfov)
         h = math.tan(theta / 2)
         viewport_height = 2 * h * focal_length
         viewport_width = viewport_height * (self._image_width / self._image_height)
 
-        # 视口水平与垂直方向（向右为 +u，向下为 +v）的边向量
-        viewport_u = Vec3(viewport_width, 0, 0)
-        viewport_v = Vec3(0, -viewport_height, 0)
+        # 计算相机坐标架的三个单位基向量 u、v、w。
+        self._w = (self._lookfrom - self._lookat).unit_vector()
+        self._u = Vec3.cross(self._vup, self._w).unit_vector()
+        self._v = Vec3.cross(self._w, self._u)
+
+        # 沿视口水平（向右）与垂直（向下）方向的边向量。
+        viewport_u = viewport_width * self._u
+        viewport_v = viewport_height * -self._v
 
         # 像素到像素的增量向量
-        self.pixel_delta_u = viewport_u / self._image_width
-        self.pixel_delta_v = viewport_v / self._image_height
+        self._pixel_delta_u = viewport_u / self._image_width
+        self._pixel_delta_v = viewport_v / self._image_height
 
         # 视口左上角及像素 (0,0) 的中心位置
         viewport_upper_left = (
-                self.center
-                - Vec3(0, 0, focal_length)
+                self._center
+                - focal_length * self._w
                 - viewport_u / 2
                 - viewport_v / 2
         )
-        self.pixel00_loc = (
-                viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v)
+        self._pixel00_loc = (
+                viewport_upper_left + 0.5 * (self._pixel_delta_u + self._pixel_delta_v)
         )
 
     def sample_square(self) -> Vec3:
@@ -179,12 +211,12 @@ class Camera:
         """
         offset: Vec3 = self.sample_square()
         pixel_sample: Point3 = (
-                self.pixel00_loc
-                + ((i + offset.x) * self.pixel_delta_u)
-                + ((j + offset.y) * self.pixel_delta_v)
+                self._pixel00_loc
+                + ((i + offset.x) * self._pixel_delta_u)
+                + ((j + offset.y) * self._pixel_delta_v)
         )
 
-        ray_origin = self.center
+        ray_origin = self._center
         ray_direction = pixel_sample - ray_origin
 
         ray: Ray = Ray(ray_origin, ray_direction)
@@ -239,3 +271,15 @@ class Camera:
     @property
     def vfov(self):
         return self._vfov
+
+    @property
+    def lookfrom(self):
+        return self._lookfrom
+
+    @property
+    def lookat(self):
+        return self._lookat
+
+    @property
+    def vup(self):
+        return self._vup
