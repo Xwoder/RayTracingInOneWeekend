@@ -8,6 +8,7 @@ from Number import Number
 from Point3 import Point3
 from Ray import Ray
 from Vec3 import Vec3
+from material.Material import Material
 
 
 class Sphere(Hittable):
