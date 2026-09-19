@@ -68,9 +68,9 @@ class Camera:
                  samples_per_pixel: int = 10,
                  max_depth: int = 10,
                  vfov: Number = 90,
-                 lookfrom: Point3 | None = None,
-                 lookat: Point3 | None = None,
-                 vup: Vec3 | None = None):
+                 lookfrom: Point3 = Point3(0, 0, 0),
+                 lookat: Point3 = Point3(0, 0, -1),
+                 vup: Vec3 = Vec3(0, 1, 0)):
         """
         构造一台相机。
 
@@ -89,9 +89,9 @@ class Camera:
         self._samples_per_pixel = samples_per_pixel
         self._max_depth = max_depth
         self._vfov = vfov
-        self._lookfrom = lookfrom if lookfrom is not None else Point3(0, 0, 0)
-        self._lookat = lookat if lookat is not None else Point3(0, 0, -1)
-        self._vup = vup if vup is not None else Vec3(0, 1, 0)
+        self._lookfrom = lookfrom
+        self._lookat = lookat
+        self._vup = vup
 
     def render(self,
                world: Hittable,
